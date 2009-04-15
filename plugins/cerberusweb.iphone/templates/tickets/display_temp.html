@@ -1,0 +1,502 @@
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+
+
+
+<meta http-equiv="Content-type" value="text/html; charset=utf-8">
+<title>PogoNotes</title>
+<link rel="stylesheet" type="text/css" media="screen" href="../css/pn.css">
+<link rel="stylesheet" type="text/css" media="screen" href="../css/pn_ie.css">
+<style type="text/css">
+	.noteBodyDiv{font-size: px;}
+	.editingNoteTextArea{font-size: px;}
+</style>
+<script type="text/javascript">var isBadIE = 0; // probably not IE</script>
+<!--[if lt IE 7.]>
+<script type="text/javascript" src="../script/pngfix2.js">//pngfix.js doesn't glitch with grey like pngfix2.js but doesn't finish loading, either</script>
+<script type="text/javascript">isBadIE = 1; // but wait, it is.  Activate filter for loaded AJAX content</script>
+<![endif]-->
+<script src="../script/jquery-1.2.3.pack.js" type="text/javascript"></script>
+
+<script src="../script/pn_iphone.js" type="text/javascript"></script>
+<script src="../script/HTTPObject.js" type="text/javascript"></script>
+<script type="text/javascript">
+	var usr = "gks494kg84kg4";
+	var pwd = "";
+	var fontSize = "";
+	function firstAction() {
+		showPage("signIn");}</script>
+
+<meta content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=1;" name="viewport">
+<meta name="apple-touch-fullscreen" content="YES">
+
+</head><div FirebugVersion="1.3.3" style="display: none;" id="_firebugConsole"></div><body>
+	
+<noscript><center><br /><br /><h3>Our Apologies.</h3><br />Javascript is required to use PogoNotes. &nbsp;Please enable Javascript, then reload the page.<br/><br /><span class="sharedInfo">-The PogoNotes Team</span></center></noscript>	
+<div style="border-color: rgb(119, 119, 119);" id="silentImageLoader">
+	<img src="../images/000000loader.gif" alt="">
+
+	<img src="../images/4DB358loader.gif" alt="">
+	<img src="../images/ff0000loader.gif" alt="">
+	<img src="../images/fff39eloader.gif" alt="">
+</div>
+
+<div style="border-color: rgb(119, 119, 119); display: none;" id="signIn">
+	<center><img src="../images/PogoNotes-logo.png" class="topLogo" alt=""></center>
+	    	<center><div style="border-color: rgb(119, 119, 119);" id="loginDiv"> 	
+				<table border="0" cellpadding="0" cellspacing="0" width="180">
+					<tbody><tr>
+						<td colspan="2" style="height: 60px;"><h4>Please Sign In:</h4><font size="-1">Not a member?<br><a href="javascript:showPage('register');">Get a Free Account!</a></font></td>
+
+					</tr>
+					<tr style="height: 5px;"><td colspan="2"></td></tr>
+					<tr><td colspan="2"><span id="unText">Username:</span></td></tr>
+					<tr><td colspan="2"><input class="inputbox" id="usernameBox" maxlength="20" value="" type="text"></td></tr>
+					<tr><td colspan="2"><span id="pwText">Password:</span></td></tr>
+					<tr><td colspan="2"><input class="inputbox" id="passwordBox" maxlength="20" type="password"></td></tr>
+					<tr style="height: 40px;"><td colspan="1"><div style="border-color: rgb(119, 119, 119);" class="borderImageBtn yellButton" onclick="doAjaxLogin();">Sign In</div></td><td colspan="1"><span style="color: black;" id="loginStatusMessage"> <b>Working...</b></span></td></tr>
+
+					<tr><td id="bottomLinks" colspan="2" height="10"><a href="javascript: showPage('about');">What are PogoNotes?</a><br><a href="javascript: showPage('tips');">Privacy Notice</a></td><td></td></tr>
+					<tr>
+						<td colspan="2"><font size="-1">Forgot your password?<br><a href="" id="resetPasswordLink">Reset it!</a></font><div style="border-color: rgb(119, 119, 119);" id="resetPassword">email address: <input class="inputbox" id="emailToReset" type="text"><a href="javascript: resetPwd();">Go!</a></div></td>
+					</tr>
+					<tr>
+						<td colspan="2" id="loginMessage" height="40"></td>
+
+					</tr>
+				</tbody></table>
+	        </div>
+			</center>
+</div>
+
+<div style="border-color: rgb(119, 119, 119);" id="register">
+			<center><img src="../images/PogoNotes-logo.png" id="logo" class="topLogo" alt="" width="160"></center>
+            <center><table style="width: 300px;" border="0">
+            <tbody><tr>
+
+         	   	<td colspan="2"><center><span id="legalText">Registration is free and easy.  Your e-mail is for password retrieval and will remain confidential.</span></center></td>
+            </tr>
+            <tr>
+        	    <td style="width: 200px;"><b>Username<span id="usernameMessage"></span></b></td>
+        	    <td><input style="width: 150px;" maxlength="20" id="newUser" onblur="findUser()" type="text"></td>
+            </tr>
+            <tr>
+        	    <td><b>Password</b></td>
+
+        	    <td><input style="width: 150px;" maxlength="20" id="newPass" type="password"></td>
+            </tr>
+            <tr>
+         	   <td><b>Confirm Password</b></td>
+         	   <td><input style="width: 150px;" maxlength="20" id="newPass2" type="password"></td>
+            </tr>
+            <tr>
+        	    <td><b>Zip Code</b></td>
+
+				<td><input style="width: 150px;" maxlength="5" id="newZip" type="text"></td>
+            </tr>
+            <tr>
+         	   	<td><b>E-Mail</b></td>
+         	   	<td><input style="width: 150px;" maxlength="50" id="newEMail" type="text"></td>
+            </tr>
+            <tr>
+         	   	<td><b>Confirm E-Mail</b></td>
+
+          	  	<td><input style="width: 150px;" maxlength="50" id="newEMail2" type="text"></td>
+            </tr>
+            <tr>
+         	   	<td><b>First Name*</b></td>
+         	   	<td><input style="width: 150px;" maxlength="20" id="newFName" type="text"></td>
+            </tr>
+            <tr>
+         	   	<td><b>Last Name*</b></td>
+
+          	  	<td><input style="width: 150px;" maxlength="20" id="newLName" type="text"></td>
+            </tr>
+			<tr>
+         	   	<td colspan="2" style="text-align: right;"><span id="optional">*Optional</span>
+            	</td>
+            </tr>
+            <tr>
+         	   	<td colspan="2" id="registerMessage" style="width: 200px;"></td>
+
+            </tr>   
+            <tr>
+         	   	<td colspan="2">
+					<ul class="navLinks">
+						<li class="borderImageBtn yellButton" onclick="showPage('signIn');">Go Back</li>
+						<li class="borderImageBtn yellButton" onclick="doRegister();">Register</li> 
+					</ul>
+            	</td>
+            </tr>
+
+            </tbody></table></center>
+
+</div>
+<div style="border-color: rgb(119, 119, 119);" id="about">
+			<center><img src="../images/PogoNotes-logo.png" id="logo" class="topLogo" alt="" width="160"></center>
+            <center><table style="width: 300px;" border="0">
+            <tbody><tr>
+         	   	<td colspan="2"><center><h3>All About PogoNotes</h3></center></td>
+            </tr>
+            <tr>
+
+  				<td colspan="2"><center>PogoNotes are a free and simple web-based way to stay organized using your iPhone.  They are accessible anywhere you go (just stay in cell range, please), and you can co-edit your notes with your friends. <br>To co-edit, just click "share" and type in the username of your friend.  The note will then show up on their personal list.  To share with a group of people, type the group name in (you can make new groups up on the fly).  Your friends can then veiw all the notes in that group.</center></td>
+            </tr>
+            <tr><td colspan="2"><center>
+            	<ul class="navLinks">
+            		<li class="borderImageBtn yellButton" onclick="showPage('signIn');">Go Back</li>
+            		<li class="borderImageBtn yellButton" onclick="showPage('register');">Register</li>
+            	</ul>
+
+            </center></td>
+            </tr>
+            <tr>
+         	   	<td></td>
+         	   	<td></td>
+            </tr>
+            <tr>
+         	   	<td rowspan="4" colspan="2" style="width: 200px;"></td>
+            </tr>
+
+            </tbody></table></center>
+</div>
+<div style="border-color: rgb(119, 119, 119);" id="tips">
+			<center><img src="../images/PogoNotes-logo.png" id="logo" class="topLogo" alt="" width="160"></center>
+            <center><table style="width: 300px;" border="0">
+            <tbody><tr>
+         	   	<td colspan="2"><center><h3>Privacy Notice</h3></center></td>
+            </tr>
+            <tr>
+
+  				<td colspan="2"><center>Any personal information collected will never be shared with a third party for any reason without your express consent.  Email addresses will only be used for password retrieval and critical notices.</center></td>
+            </tr>
+            <tr><td colspan="2"><center>
+            	<ul class="navLinks">
+            		<li class="borderImageBtn yellButton" onclick="showPage('signIn');">Go Back</li>
+            		<li class="borderImageBtn yellButton" onclick="showPage('register');">Register</li>
+            	</ul>
+
+            </center></td>
+            </tr>
+            <tr>
+         	   	<td rowspan="4" colspan="2" style="width: 200px;"></td>
+            </tr>
+            </tbody></table></center>
+</div>
+
+<div style="border-color: rgb(119, 119, 119); display: block;" id="menuButtons">
+
+	<div style="border-color: rgb(119, 119, 119);" id="topMenuBar">
+
+	<table id="topMenuTable"><tbody><tr>
+		<td id="topMenuTableLeft">
+		<div style="border-color: rgb(119, 119, 119);" id="button0Holder"><div style="border-color: rgb(119, 119, 119);" class="borderImageBtn greenButton" id="button0"><span class="topButtons">Options</span></div></div>
+		</td>
+		<td><div style="border-color: rgb(119, 119, 119);" class="headerDiv"><h3>My PogoNotes</h3></div></td>
+		<td id="topMenuTableRight">
+		<div style="border-color: rgb(119, 119, 119);" id="button5Holder"><div style="border-color: rgb(119, 119, 119);" class="borderImageBtn greenButton" id="button5"><span class="topButtons">+</span></div></div>
+
+		</td>
+	</tr></tbody></table>
+	</div>
+	<div style="border-color: rgb(119, 119, 119);" id="exitMenuDiv"></div>
+	
+</div>
+
+
+<div style="border-color: rgb(119, 119, 119); display: block;" id="viewNotes">
+	<div style="border-color: rgb(119, 119, 119);" id="alertDiv" class="alertMessage">
+		<center>
+			<font size="+1"><b>Service Interruption</b></font><br>
+			PogoNotes was subject to a recent service interruption from Sunday 6/8 to Thursday 6/12.  The interruption was the result of a DNS issue with our hosting provider. &nbsp;We sincerely apologize for any inconvenience this has caused, and will make every effort to keep the service available forthwith.<br><br>
+			<span class="sharedInfo">-The PogoNotes Team</span><br><br>
+		</center>&nbsp;&nbsp;
+		<span class="hideMessage">hide message</span> | <span class="acknowledgeMessage">don't show again</span>
+	</div>
+
+	<div style="border-color: rgb(119, 119, 119);" id="suggestionBox">
+		<div style="border-color: rgb(119, 119, 119);" id="feedbackCollect"><table>
+			<tbody><tr><td colspan="1"><center>We'd love to hear your thoughts about PogoNotes.  How can we make it easier to use?  What features would be handy?  Was anything broken?  Type us a quick note! </center></td>
+			</tr><tr><td colspan="1"><center><textarea cols="35" rows="2" id="suggestionText"></textarea></center></td>
+			</tr><tr><td colspan="1"><center><input value="Send!" onclick="sendFeedback();" style="width: 119px;" type="button"> <input value="Close" onclick="$('#suggestionBox').hide();" style="width: 119px;" type="button"></center></td>
+			</tr>
+		</tbody></table></div>
+
+		<div style="border-color: rgb(119, 119, 119);" id="sending"><center>Sending Feedback...<br><br><input value="Close" onclick="$('#suggestionBox').hide(); $('#sending').hide(); $('#feedbackCollect').show();" style="width: 119px;" type="button"></center></div>
+		<div style="border-color: rgb(119, 119, 119);" id="sent"><center>Feedback has been sent. Thanks!<br><br><input value="Close" onclick="$('#suggestionBox').hide(); $('#sent').hide(); $('#feedbackCollect').show();" style="width: 119px;" type="button"></center></div>
+	</div>
+	<div style="border-color: rgb(119, 119, 119);" id="noteList">
+		<ul>
+			<li class="noteLi catGeneral">
+				<div class="noteTitleDiv">
+					<ul class="noteTitleUl">
+						<li class="noteTitleLi1" style="margin-left: 9px; opacity: 0;">.</li>
+						<li class="noteTitleLi2" style="margin-left: 5px; opacity: 0;">.</li>
+						<li class="noteTitleLi"><strong>Welcome!</strong></li>
+					</ul>
+				</div>
+				<div class="noteBodyDiv">
+					<div class="noteBodyTextDiv">Welcome to PogoNotes for iPhone<br><br>This is a sample PogoNote.  It's easy to add more!<br><br>1)  Click the 'plus' button above and to the right.<br>2)  Fill in a note title and text.  If you don't choose a title, we'll make one up for you.<br>4)  Click save.  You're done!<br><br>You can view this PogoNote at any time on your iPhone.<br>In the 'Options' menu, you can see notes from others, find tips, and change your settings.
+					</div>
+					<div class="detailsDiv">
+						<div class="editDivButton yellButton borderImageBtn">Edit</div>
+						<ul class="infoUl">
+							<li class="infoLi0"><strong>Date: </strong>2009-04-03&nbsp;&nbsp;<img src="../images/expand.png" alt=""></li>
+							<li class="infoLi1"><strong>Date: </strong>2009-04-03</li>
+							<li class="infoLi3"><strong>Category: </strong></li>
+						</ul>
+						<span class="invCat inv">General</span>
+						<span class="invS inv">0</span>
+						<span class="invSG inv">all</span>
+						<span class="invAutoinc inv">41445</span>
+						<span class="invPw inv"></span>
+						<span class="invCE inv">0</span>
+					</div>
+					<div class="editingDiv"></div>
+				</div>
+			</li>
+			<li class="noteLi catGeneral">
+				<div class="noteTitleDiv">
+					<ul class="noteTitleUl">
+						<li class="noteTitleLi1" style="margin-left: 9px; opacity: 0;">.</li>
+						<li class="noteTitleLi2" style="margin-left: 5px; opacity: 0;">.</li>
+						<li class="noteTitleLi"><strong>Your first PogoNote</strong></li>
+					</ul>
+				</div>
+				<div style="display: none;" class="noteBodyDiv">
+					<div class="noteBodyTextDiv">This is another sample PogoNote.<br><br>
+			
+						To edit this note, click the 'Edit' button below.  You'll find options for editing, sharing and deleting.  It's fine to delete this note, or you may first create some new test notes and delete them.<br><br>
+			
+						Try turning on sharing for your useful or interesting notes.  This will allow others in your community to view and co-edit your note.<br>
+						We hope you enjoy using PogoNotes.com.  Click the Feedback link in the options menu if you have any suggestions.
+					</div>
+					<div class="detailsDiv">
+						<div class="editDivButton yellButton borderImageBtn">Edit</div>
+						<ul class="infoUl">
+							<li class="infoLi0"><strong>Date: </strong>2009-04-03&nbsp;&nbsp;<img src="../images/expand.png" alt=""></li>
+							<li class="infoLi1"><strong>Date: </strong>2009-04-03</li>
+							<li class="infoLi3"><strong>Category: </strong></li>
+						</ul>
+						<span class="invCat inv">General</span>
+						<span class="invS inv">0</span>
+						<span class="invSG inv">all</span>
+						<span class="invAutoinc inv">41446</span>
+						<span class="invPw inv"></span>
+						<span class="invCE inv">0</span>
+					</div>
+					<div class="editingDiv"></div>
+				</div>
+			</li>
+			<li>
+				<div class="signedIn">Signed in as mfogg &nbsp;<a href="../php/doSignOut.php">sign out</a></div>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div style="border-color: rgb(119, 119, 119);" id="editSettings">
+
+			<center><br><img src="../images/PogoNotes-logo.png" id="logo" class="topLogo" alt="" width="160"></center>
+            <center><table style="width: 300px;" border="0">
+            <tbody><tr>
+        	    <td><b>Zip Code</b></td>
+				<td><input style="width: 150px;" maxlength="5" id="newZipSet" value="" type="text"></td>
+            </tr>
+
+            <tr>
+        	    <td><b>Password</b></td>
+        	    <td><input style="width: 150px;" maxlength="50" id="newPassSet" value="" type="password"></td>
+            </tr>
+            <tr>
+         	   <td><b>Confirm Password</b></td>
+         	   <td><input style="width: 150px;" maxlength="50" id="newPass2Set" value="" type="password"></td>
+            </tr>
+
+            <tr>
+         	   	<td><b>E-Mail</b></td>
+         	   	<td><input style="width: 150px;" maxlength="50" id="newEMailSet" value="" type="text"></td>
+            </tr>
+            <tr>
+         	   	<td><b>Confirm E-Mail</b></td>
+          	  	<td><input style="width: 150px;" maxlength="50" id="newEMail2Set" value="" type="text"></td>
+
+            </tr>
+            <tr>
+         	   	<td><b>First Name*</b></td>
+         	   	<td><input style="width: 150px;" maxlength="20" id="newFNameSet" value="" type="text"></td>
+            </tr>
+            <tr>
+         	   	<td><b>Last Name*</b></td>
+          	  	<td><input style="width: 150px;" maxlength="20" id="newLNameSet" value="" type="text"></td>
+
+            </tr>
+			<tr>
+				<td><b>Font Size</b></td>
+				<td>
+					<select class="fontSelect" id="fontSelect">
+						<option value="8">Miniscule</option>
+						<option value="10">Smaller</option>
+
+						<option selected="selected" value="12">Default</option>
+						<option value="14">Little Bigger</option>
+						<option value="16">Large</option>
+						<option value="18">Abnormal</option>
+					</select>
+				</td>
+			</tr>
+
+            <tr>
+         	   	<td rowspan="1" colspan="2" id="message" style="width: 200px;"></td>
+            </tr>
+            <tr>
+         	   <td colspan="2"><center><b>Current Password is Required for Changes</b></center></td>
+         	</tr>
+         	<tr>
+         	   <td colspan="2"><center><input style="width: 150px;" maxlength="20" id="curPassSet" type="password"></center></td>
+
+            </tr>
+            <tr>
+         	   	<td rowspan="1" colspan="2" id="settingsMessage" style="width: 200px;"></td>
+            </tr>
+            <tr>
+         	   	<td rowspan="1" colspan="2" id="legal" style="width: 200px;">As a registrant of PogoNotes.com, you are restricted to personal use of the PogoNotes.com services. Unless you have been specifically permitted to do so in a separate agreement with PogoNotes.com, you agree that you will not reproduce, duplicate, copy, sell, trade or resell the Services provided by PogoNotes.com for any purpose. By actually using the Services provided by PogoNotes.com, you understand and agree that PogoNotes.com will treat your use of the Services as acceptance of these Terms from that point onwards.</td>
+            </tr>
+            </tbody></table></center>
+
+</div>
+<div style="border-color: rgb(119, 119, 119);" id="recentPublicGroupsDiv">
+	<center>
+	<span>Recently Selected Groups</span>
+	<table class="recentGroupsTable" border="0">
+	<tbody><tr><td class="recentGroupsTable"><span id="recentG0">iPhone</span></td></tr>
+	<tr><td class="recentGroupsTable"><span id="recentG1">News</span></td></tr>
+	<tr><td class="recentGroupsTable"><span id="recentG2">Technology</span></td></tr>
+
+	<tr><td class="recentGroupsTable"><span id="recentG3">Celebrities</span></td></tr>
+	<tr><td class="recentGroupsTable"><span id="recentG4">Gaming</span></td></tr>
+	<tr><td class="recentGroupsTable"><center><span id="allGroupsLink">See all known groups</span></center></td></tr>
+	<tr><td class="recentGroupsTable"><center><span id="closeRecentLink">Close</span></center></td></tr>
+	</tbody></table>
+	</center>
+</div>
+
+<div style="border-color: rgb(119, 119, 119);" id="menuPopupDiv">
+<div style="border-color: rgb(119, 119, 119);" class="darkenDiv" id="button0Darken"></div>
+	<div style="border-color: rgb(119, 119, 119);" class="darkenDiv" id="button1Darken"></div>
+	<div style="border-color: rgb(119, 119, 119);" id="button1Holder"><table class="buttonTable" border="0">
+		<tbody><tr>
+			<td>
+				<div style="border-color: rgb(51, 51, 51);" class="buttons" id="button1"><span class="buttons">View Shared</span></div>
+			</td>
+			<td>
+
+				<div style="border-color: rgb(51, 51, 51);" class="buttons" id="button2"><span class="buttons">Feedback</span></div>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div style="border-color: rgb(119, 119, 119);" class="greyButtons" id="lookWhereButton"><span class="buttons">Find Notes:</span>
+					<select class="publicSearchFields" id="publicSearchType" onchange="handlePublicTypeChange()">
+						<option value="8">All PogoNotes</option>
+
+						<option value="1">From a Group</option>
+						<option value="2">In my Zip Code</option>
+						<option value="3">From a User</option>
+						<option value="4">Keyword Search</option>
+					</select>
+					
+					<div style="border-color: rgb(119, 119, 119);" class="greyButtonHopOns" id="groupSelectButton"><table border="0">
+						<tbody><tr><td><span class="buttons">Group Name:&nbsp; </span>
+
+						<input style="width: 100px;" maxlength="20" id="groupSelectButtonText" value="" type="text">
+						</td></tr>
+						<tr><td>
+						
+						</td></tr>
+						<tr><td>
+						<div style="border-color: rgb(119, 119, 119);" id="showRecentGroupsButton"><span>Recent Groups</span></div></td></tr>
+						<tr><td>
+						<div style="border-color: rgb(119, 119, 119);" class="publicSearchButton">Search</div>
+
+						</td></tr></tbody></table>
+					</div>
+					<div style="border-color: rgb(119, 119, 119);" class="greyButtonHopOns" id="zipSelectButton"><span class="buttons">&nbsp;Zip Code:</span>
+						<input style="width: 100px;" maxlength="20" class="publicSearchFields" id="zipSelectButtonText" value="" type="text">
+						<div style="border-color: rgb(119, 119, 119);" class="publicSearchButton">Search</div>
+					</div>
+					<div style="border-color: rgb(119, 119, 119);" class="greyButtonHopOns" id="userSelectButton"><span class="buttons">&nbsp;User Name:</span>
+
+						<input style="width: 100px;" maxlength="20" class="publicSearchFields" id="userSelectButtonText" type="text">
+						<div style="border-color: rgb(119, 119, 119);" class="publicSearchButton">Search</div>
+					</div>
+					<div style="border-color: rgb(119, 119, 119);" class="greyButtonHopOns" id="keywordSelectButton"><span class="buttons">&nbsp;Keyword:</span>
+						<input style="width: 100px;" maxlength="20" class="publicSearchFields" id="keywordSelectButtonText" type="text">
+						<div style="border-color: rgb(119, 119, 119);" class="publicSearchButton">Search</div>
+					</div>
+
+				</div>
+				
+				
+				<div style="border-color: rgb(51, 51, 51);" class="buttons" id="button3"><span class="buttons">Settings</span></div>
+			</td>
+			<td>
+				<div style="border-color: rgb(51, 51, 51);" class="buttons" id="button4"><span class="buttons">News &amp; Tips</span></div>
+			</td>
+		</tr>
+
+		<tr>
+			<td>
+				<div style="border-color: rgb(51, 51, 51);" class="buttons" id="refreshButton"><span class="buttons">Refresh</span></div>
+			</td>
+			<td>
+				<div style="border-color: rgb(51, 51, 51);" class="buttons" id="stylusAdButton"><span class="buttons">Pogo Stylus</span><br><span class="smallButtonText">for iPhone and iPod touch</span></div>
+			</td>
+
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div style="border-color: rgb(51, 51, 51);" id="signOutButton"><span class="buttons">Sign Out from PogoNotes</span></div>
+			</td>
+		</tr>
+	</tbody></table></div>
+</div>
+<div style="border-color: rgb(119, 119, 119);" id="editingDivContent">
+
+	<div style="border-color: rgb(119, 119, 119);" class="cancelDivButton yellButton borderImageBtn">Cancel</div><div style="border-color: rgb(119, 119, 119);" class="saveDivButton yellButton borderImageBtn">Save</div>
+	<ul class="editingInfoUl">
+		<li class="editingInfoLi1"><strong>Share with: </strong>				
+					<select class="editingShareSelect">
+						<option value="1">Nobody</option>
+						<option value="2">A User</option>
+						<option value="3">A Group</option>
+
+						<option value="4">Everybody</option>
+					</select></li>
+		<li class="editingInfoLi2"><span class="editingGroupInputSpan"><strong>Name: &nbsp;</strong><input style="width: 70px;" class="editingGroupInput" type="text">&nbsp;&nbsp;  &nbsp;</span><img src="../images/lock.png" alt="">&nbsp;<input style="width: 70px;" class="editingPwInput" type="text"> </li>
+		<li class="editingInfoLi3"><strong>Category: &nbsp;</strong>				
+					<select class="editingCategorySelect">
+						<option value="1">General</option>
+
+						<option value="2">Urgent</option>
+						<option value="3">To-do</option>
+						<option value="4">Groceries</option>
+						<option value="5">Restaurants</option>
+						<option value="6">Work</option>
+						<option value="7">School</option>
+
+						<option value="8">Family</option>
+						<option value="9">Gifts</option>
+						<option value="10">Need to buy</option>
+					</select>&nbsp;<span class="colorPreview">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li>
+
+		<li class="editingInfoLi4"><span class="editingSharedBy"></span></li>
+	</ul>
+</div>
+
+<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
+</script>
+<script type="text/javascript">
+_uacct = "UA-872446-3";
+urchinTracker();
+</script>
+</body></html>

@@ -1,0 +1,82 @@
+<!DOCTYPE plugin SYSTEM "../../libs/devblocks/plugin.dtd">
+<plugin>
+	<id>cerberusweb.iphone</id>
+	<name>Cerberus Helpdesk: iPhone UI (Experimental)</name>
+	<description>iPhone interface.  This is accessed by appending /iphone to your helpdesk URL.</description>
+	<author>WebGroup Media, LLC.</author>
+	<revision>0</revision>
+	<link></link>
+	<class>
+		<file>classes.php</file>
+		<name>ChIPhonePlugin</name>
+	</class>
+	
+	<extensions>
+	
+		<extension point="devblocks.controller">
+			<id>cerberusweb.controller.iphone</id>
+			<name>iPhone Controller</name>
+			<class>
+				<file>classes.php</file>
+				<name>IPhoneController</name>
+			</class>
+			<params>
+				<param key="uri" value="iphone" />
+			</params>
+		</extension>
+		
+		<extension point="cerberusweb.iphone.page">
+			<id>iphone.main</id>
+			<name>Main iPhone Page</name>
+			<class>
+				<file>classes.php</file>
+				<name>ChIPhoneMainPage</name>
+			</class>
+			<params>
+				<param key="uri" value="main" />
+				<param key="menutitle" value="Main" />
+			</params>
+		</extension>
+		
+		
+		<extension point="cerberusweb.iphone.page">
+			<id>iphone.login</id>
+			<name>iPhone Login Page</name>
+			<class>
+				<file>classes.php</file>
+				<name>ChIPhoneLoginPage</name>
+			</class>
+			<params>
+				<param key="uri" value="login" />
+				<param key="menutitle" value="" />
+			</params>
+		</extension>
+		
+		<extension point="cerberusweb.iphone.page">
+			<id>iphone.tickets</id>
+			<name>Tickets</name>
+			<class>
+				<file>classes.php</file>
+				<name>ChIPhoneTicketsPage</name>
+			</class>
+			<params>
+				<param key="uri" value="tickets" />
+				<param key="menutitle" value="Tickets" />
+			</params>
+		</extension>
+		
+		<extension point="cerberusweb.iphone.page">
+			<id>iphone.display</id>
+			<name>Display Ticket</name>
+			<class>
+				<file>classes.php</file>
+				<name>ChIPhoneDisplayPage</name>
+			</class>
+			<params>
+				<param key="uri" value="display" />
+				<param key="menutitle" value="Display" />
+			</params>
+		</extension>		
+		
+	</extensions>
+</plugin>
