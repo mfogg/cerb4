@@ -1,3 +1,45 @@
+<div id="top_nav">
+	<img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/c4_logo_20.gif{/devblocks_url}" align="top">
+	<ul id="top_tabs">
+		<li><a href="{devblocks_url}c=resource&p=cerberusweb.iphone&f=iphone/home{/devblocks_url}">home</a></li>{strip}
+		{/strip}<li class="top_tabs_selected"><a href="#">mail</a></li>{strip}
+		{/strip}<li><a href="#">activity</a></li>
+
+	</ul>
+</div>
+<div id="toolbar">
+	<div id="tb">
+
+			{if !$ticket->is_deleted}
+				{if $ticket->is_closed}
+					<a href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/folder_out.png{/devblocks_url}" align="top"></a>
+				{else}
+					{if $active_worker->hasPriv('core.ticket.actions.close')}<a title="{$translate->_('display.shortcut.close')}" href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/folder_ok.png{/devblocks_url}" align="top"></a>{/if}
+				{/if}
+				
+				{if empty($ticket->spam_training)}
+					{if $active_worker->hasPriv('core.ticket.actions.spam')}<a title="{$translate->_('display.shortcut.spam')}" href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/spam.png{/devblocks_url}" align="top"></a>{/if}
+				{/if}
+			{/if}
+
+			{if $ticket->is_deleted}
+				<a href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/delete_gray.gif{/devblocks_url}" align="top"></a>
+			{else}
+				{if $active_worker->hasPriv('core.ticket.actions.delete')}<a href="javascript:none();" title="{$translate->_('display.shortcut.delete')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/delete.png{/devblocks_url}" align="top"></a>{/if}
+			{/if}
+		
+		
+			{if empty($ticket->next_worker_id)}<a href="javascript:none();" title="{$translate->_('display.shortcut.take')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/hand_paper.png{/devblocks_url}" align="top"></a>{/if}
+			{if $ticket->next_worker_id == $active_worker->id}<a href="javascript:none();" title="{$translate->_('display.shortcut.surrender')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/flag_yellow.png{/devblocks_url}" align="top"></a>{/if}
+			
+			{*
+			<a href="javascript:none();" onclick="replyButton(event);"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/export2.png{/devblocks_url}" align="top"></a>
+			*}
+
+	</div>
+</div>
+
+
 <div id="display">
 
 <div id="display_top">
@@ -17,7 +59,7 @@
 </ul>
 </div>
 *}
-
+{*
 <div id="ticket_action_links_container">
 	<ul id="ticket_action_links">
 			{if !$ticket->is_deleted}
@@ -42,6 +84,7 @@
 			{if empty($ticket->next_worker_id)}<li><a href="javascript:none();" title="{$translate->_('display.shortcut.take')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/hand_paper.png{/devblocks_url}" align="top"></a></li>{/if}
 			{if $ticket->next_worker_id == $active_worker->id}<li><a href="javascript:none();" title="{$translate->_('display.shortcut.surrender')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/flag_yellow.png{/devblocks_url}" align="top"></a></li>{/if}
 			
+			
 			<li id="top_button_reply">
 				<a href="javascript:none();" onclick="replyButton(event);"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/export2.png{/devblocks_url}" align="top"></a>
 			</li>
@@ -50,7 +93,7 @@
 	</ul>
 	
 </div>			 
-
+*}
 
 <div id="properties">
 	<table border="0" cellspacing="0" cellpadding="0">

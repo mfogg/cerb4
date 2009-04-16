@@ -31,9 +31,9 @@
 				{/if}
 			</div>
 	      	<ul class="message_buttons">
-		      	{if $active_worker->hasPriv('core.display.actions.reply')}<li><button {if $latest_message_id==$message->id}id="btnReplyFirst"{/if} type="button"> <img src="{devblocks_url}c=resource&p=cerberusweb.core&f=images/export2.png{/devblocks_url}" align="top"><br/>{$translate->_('display.ui.reply')|capitalize}</button></li>{/if}
-		      	{if $active_worker->hasPriv('core.display.actions.forward')}<li><button type="button" onclick="displayAjax.reply('{$message->id}',1);"><img src="{devblocks_url}c=resource&p=cerberusweb.core&f=images/document_out.png{/devblocks_url}" align="top"> <br/>{$translate->_('display.ui.forward')|capitalize}</button></li>{/if}
-		      	{if $active_worker->hasPriv('core.display.actions.note')}<li><button type="button" onclick="displayAjax.addNote('{$message->id}');"><img src="{devblocks_url}c=resource&p=cerberusweb.core&f=images/document_plain_yellow.png{/devblocks_url}" align="top"> <br/>Note</button></li>{/if}
+		      	{if $active_worker->hasPriv('core.display.actions.reply')}<li><button {if $latest_message_id==$message->id}id="btnReplyFirst"{/if} type="button"> <img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/export2.png{/devblocks_url}" align="top"><br/>{$translate->_('display.ui.reply')|capitalize}</button></li>{/if}
+		      	{if $active_worker->hasPriv('core.display.actions.forward')}<li><button type="button" onclick="displayAjax.reply('{$message->id}',1);"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/document_out.png{/devblocks_url}" align="top"> <br/>{$translate->_('display.ui.forward')|capitalize}</button></li>{/if}
+		      	{if $active_worker->hasPriv('core.display.actions.note')}<li><button type="button" onclick="displayAjax.addNote('{$message->id}');"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/document_plain.png{/devblocks_url}" align="top"> <br/>Note</button></li>{/if}
 	      	</ul>
 		
 		</div>

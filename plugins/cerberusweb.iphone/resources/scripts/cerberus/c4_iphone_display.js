@@ -1,9 +1,4 @@
 
-function sayHi() {
-	alert('hi');
-	
-}
-
 $(document).ready(function(){
 		//alert('hi');
 		

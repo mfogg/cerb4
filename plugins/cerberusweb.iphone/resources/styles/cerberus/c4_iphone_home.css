@@ -1,0 +1,151 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: Helvetica;
+}
+
+.dval {
+	display: none;
+}
+
+
+div#top_nav {
+	display: block;
+	font-size: 14px;
+	margin-top: 10px;
+	
+}
+
+div#top_nav img {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
+
+div#top_nav ul#top_tabs {
+    position:relative;
+	padding-left: 40px;
+	padding-bottom: 5px;	
+	margin: 0px; 
+	font: bold 12px arial, sans-serif;
+	border-bottom: #6487D5 3px solid; 
+	list-style-type: none; 
+	text-align: left;
+		
+		
+}
+
+div#top_nav ul#top_tabs li {
+	display: inline;
+	margin: 0px;
+}
+
+div#top_nav ul#top_tabs li a {
+    position:relative;
+	border-right: #6487D5 1px solid;
+	border-top: #6487D5 1px solid;
+	border-left: #6487D5 1px solid;
+	padding-right: 10px;
+	padding-top: 5px; 
+	padding-left: 10px; 
+	padding-bottom: 5px; 
+	color: #666; 
+	margin-right: 0px;
+	background-color: #f0f0f0; 
+	text-decoration: none
+}
+
+div#top_nav ul#top_tabs li.top_tabs_selected a {
+	color: #ffffff;
+	/* background-color: rgb(254,193,34); */
+	background-color:#6487D5;
+	background-image:url(bg_grad_cobalt.jpg);
+	background-repeat:repeat-x;
+}
+
+
+div#toolbar {
+	position: relative;
+	background-color:#6487D5;
+	background-image:url(blue_grad2.jpg);
+	background-repeat:repeat-x;
+	height: 34px;
+}
+
+div#toolbar div#tb {
+	position: absolute; 
+	top:50%; 
+	height:24px; 
+	margin-top:-12px;
+}
+
+/*
+div#toolbar select {
+
+}
+*/
+
+div#worklists {
+	display: none;
+}
+
+div#worklists ul.worklist {
+	list-style-type: none; 
+	padding: 0;
+	margin: 0;
+}
+
+
+div#worklists ul.worklist li.worklist_item 
+div.worklist_container div.worklist_header {
+	background-image:url(white_grad.jpg);
+	background-repeat:repeat-x;
+	margin: 0;
+	
+    border-bottom: 1px solid #E0E0E0;
+    padding: 8px 0 8px 10px; 
+    font-size: 16px;
+    font-weight: bold;
+    list-style: none;	
+
+}
+
+div#worklists ul.worklist li.worklist_item 
+div.worklist_container div.worklist_content {
+	display: none;
+} 
+
+
+ul.view_list {
+	list-style-type: none;
+	padding: 0;
+}
+
+ul.view_list li.view_list_item {
+	border-bottom: 1px solid #E0E0E0;
+	padding: 5px 0 5px 5px;
+}
+
+ul.view_list li.view_list_item table {
+	width: 100%;
+}
+
+ul.view_list li.view_list_item td {
+	color:rgb(130,130,130);
+}
+
+ul.view_list li.view_list_item td span.view_next_in {
+	color: rgb(255, 50, 50); 
+	background-color: rgb(255, 213, 213); 
+	font-weight: bold;	
+	
+}
+
+ul.view_list li.view_list_item td span.view_next_out {
+	color: rgb(50, 120, 50); 
+	background-color: rgb(219, 255, 190); 
+	font-weight: bold;
+}
+
+ul.view_list li.view_list_item td span.view_next_new {
+}

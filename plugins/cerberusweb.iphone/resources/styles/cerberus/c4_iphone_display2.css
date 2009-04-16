@@ -1,0 +1,77 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: Helvetica;
+}
+
+
+
+
+
+
+div#top_nav {
+	display: block;
+	font-size: 14px;
+	margin-top: 10px;
+	
+}
+
+div#top_nav img {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
+
+div#top_nav ul#top_tabs {
+    position:relative;
+	padding-left: 40px;
+	padding-bottom: 5px;	
+	margin: 0px; 
+	font: bold 12px arial, sans-serif;
+	border-bottom: #6487D5 3px solid; 
+	list-style-type: none; 
+	text-align: left;
+		
+		
+}
+
+div#top_nav ul#top_tabs li {
+	display: inline;
+	margin: 0px;
+}
+
+div#top_nav ul#top_tabs li a {
+    position:relative;
+	border-right: #6487D5 1px solid;
+	border-top: #6487D5 1px solid;
+	border-left: #6487D5 1px solid;
+	padding-right: 10px;
+	padding-top: 5px; 
+	padding-left: 10px; 
+	padding-bottom: 5px; 
+	color: #666; 
+	margin-right: 0px;
+	background-color: #f0f0f0; 
+	text-decoration: none
+}
+
+div#top_nav ul#top_tabs li.top_tabs_selected a {
+	color: #ffffff;
+	/* background-color: rgb(254,193,34); */
+	background-color:#6487D5;
+	background-image:url(bg_grad_cobalt.jpg);
+	background-repeat:repeat-x;
+}
+
+
+div#toolbar {
+	position: relative;
+	background-color:#6487D5;
+	background-image:url(blue_grad2.jpg);
+	background-repeat:repeat-x;
+	height: 34px;
+}
+
+
+
+

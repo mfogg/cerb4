@@ -77,6 +77,19 @@
 				<param key="menutitle" value="Display" />
 			</params>
 		</extension>		
+
+		<extension point="cerberusweb.iphone.page">
+			<id>iphone.home</id>
+			<name>Home</name>
+			<class>
+				<file>classes.php</file>
+				<name>ChIPhoneHomePage</name>
+			</class>
+			<params>
+				<param key="uri" value="home" />
+				<param key="menutitle" value="Home" />
+			</params>
+		</extension>		
 		
 	</extensions>
 </plugin>

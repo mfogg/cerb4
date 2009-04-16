@@ -210,7 +210,7 @@ class C4_IPhoneTicketView extends C4_TicketView {
 	function render() {
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->assign('id', $this->id);
-		$view_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/tickets/';
+		$view_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/home/';
 		$tpl->assign('view_path_mobile',$view_path_mobile);
 		$tpl->assign('view', $this);
 
@@ -663,31 +663,14 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 	}
 	
 	function drawResourceTags() {
-		echo "<script src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js\" type=\"text/javascript\"></script>\n";
-
-
 		$tpl = DevblocksPlatform::getTemplateService();
 
-		$content = "c=resource&p=cerberusweb.iphone&f=styles/cerberus/c4_iphone_display.css";
-		$params=array();
-		$resource_path = smarty_block_devblocks_url($params, $content, $tpl);
-		
-		echo "<style type=\"text/css\" media=\"screen\">@import \"".$resource_path."\";</style>\n";
-		
-		$content = "c=resource&p=cerberusweb.iphone&f=scripts/cerberus/c4_iphone_display.js";
-		$params=array();
-		$resource_path = smarty_block_devblocks_url($params, $content, $tpl);
-		
-		echo "<script type=\"text/javascript\" src=\"".$resource_path."\"></script>\n";
-		
+		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
+		$tpl->display('file:' . $tpl_path . 'display/display_head.tpl');
 	}
 	
 	
 	function render() {
-		//echo "<ul title=\"Cerb4\" selected=\"true\"><li href=\"/\">whatever</li></ul>";
-		//return;
-		
-		// draws HTML form of controls needed for login information
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
 		
@@ -789,6 +772,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		
 		
 		$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/display.tpl');
+		//$tpl->display('file:' . dirname(__FILE__) . '/templates/display/display2.tpl');
 
 		
 		
@@ -844,6 +828,141 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 	}
 
 };
+
+
+class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
+	function __construct($manifest) {
+		parent::__construct($manifest);
+	}
+	
+	function isVisible() {
+		return true;
+	}
+	
+	function drawResourceTags() {
+		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
+		$tpl->display('file:' . $tpl_path . 'home/home_head.tpl');
+	}
+	
+	
+	function render() {
+		
+		// draws HTML form of controls needed for login information
+		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl->cache_lifetime = "0";
+		
+		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
+		//$translate = DevblocksPlatform::getTranslationService();
+		//$tpl->assign('translate', $translate);
+
+
+		$workspaces = DAO_WorkerWorkspaceList::getWorkspaces($active_worker->id);
+		$tpl->assign('workspaces', $workspaces);
+
+		$tpl->display('file:' . dirname(__FILE__) . '/templates/home/home.tpl');
+	}
+
+
+	
+	function showNotificationsAction() {
+		
+	}
+	
+	function showWorklistsAction() {
+		$current_workspace = DevblocksPlatform::importGPC($_REQUEST['workspace'],'string','');
+
+		$db = DevblocksPlatform::getDatabaseService();
+
+		$active_worker = CerberusApplication::getActiveWorker();
+
+		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl->cache_lifetime = "0";
+		
+//		// Fix a bad/old cache
+//		if(!empty($current_workspace) && false === array_search($current_workspace,$workspaces))
+//			$current_workspace = '';
+//		
+//		$views = array();
+//			
+//		if(empty($current_workspace) && !empty($workspaces)) { // custom dashboards
+//			$current_workspace = reset($workspaces);
+//		}
+		
+		if(!empty($current_workspace)) {
+			
+			$lists = DAO_WorkerWorkspaceList::getWhere(sprintf("%s = %d AND %s = %s",
+				DAO_WorkerWorkspaceList::WORKER_ID,
+				$active_worker->id,
+				DAO_WorkerWorkspaceList::WORKSPACE,
+				$db->qstr($current_workspace)
+			));
+
+			$tpl->assign('worklists', $lists);
+			$tpl->assign('current_workspace', $current_workspace);
+			$tpl->display('file:' . dirname(__FILE__) . '/templates/home/worklists.tpl');
+
+//	        // Loop through list schemas
+//			if(is_array($lists) && !empty($lists))
+//			foreach($lists as $list) { /* @var $list Model_WorkerWorkspaceList */
+//				
+//			}
+		}
+		
+		
+	}
+	
+
+	function showViewAction() {
+		$view_id = DevblocksPlatform::importGPC($_REQUEST['view_id'],'integer',0);
+		
+		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl->cache_lifetime = "0";
+		
+		$list = DAO_WorkerWorkspaceList::get($view_id);
+//		print_r($list);
+		$view_id = 'cust_'.$list->id;
+		if(null == ($view = C4_AbstractViewLoader::getView('',$view_id)) || 1==1) {
+			$list_view = $list->list_view; /* @var $list_view Model_WorkerWorkspaceListView */
+			
+			// Load the workspace sources to map to view renderer
+	        $source_manifests = DevblocksPlatform::getExtensions(Extension_WorkspaceSource::EXTENSION_POINT, false);
+			
+			
+			// Make sure we can find the workspace source (plugin not disabled)
+			if(!isset($source_manifests[$list->source_extension])
+				|| null == ($workspace_source = $source_manifests[$list->source_extension])
+				|| !isset($workspace_source->params['view_class'])) {print_r($list);
+				echo "there is a problem with the plugin required for this view";
+				return;
+			}
+			
+			// Make sure our workspace source has a valid renderer class
+			$view_class = $workspace_source->params['view_class'];
+//			if(!class_exists($view_class))
+//				continue;
+//				echo "hi";print_r($workspace_source);
+			$view = new C4_IPhoneTicketView;
+			$view->id = $view_id;
+			$view->name = $list_view->title;
+			$view->renderLimit = 10;
+			$view->renderPage = 0;
+			$view->view_columns = $list_view->columns;
+			$view->params = $list_view->params;
+			//C4_AbstractViewLoader::setView($view_id, $view);
+			
+			
+		}
+		//print_r($view);
+		$tpl->assign('view', $view);
+
+		$tpl->display('file:' . dirname(__FILE__) . '/templates/home/tickets.tpl');
+		
+	}
+
+};
+
+
 
 
 
