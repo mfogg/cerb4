@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript"></script>
 
-{* 
-<style type="text/css" media="screen">@import "{devblocks_url}c=resource&p=cerberusweb.iphone&f=scripts/iui/iui.css{/devblocks_url}";</style>
-<script type="text/javascript" src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=scripts/iui/iui.js{/devblocks_url}"></script>
-*}
-
 {if !empty($page) && $page->isVisible()}
 	{$page->drawResourceTags()}
 {/if}

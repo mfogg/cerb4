@@ -26,20 +26,6 @@
 		</extension>
 		
 		<extension point="cerberusweb.iphone.page">
-			<id>iphone.main</id>
-			<name>Main iPhone Page</name>
-			<class>
-				<file>classes.php</file>
-				<name>ChIPhoneMainPage</name>
-			</class>
-			<params>
-				<param key="uri" value="main" />
-				<param key="menutitle" value="Main" />
-			</params>
-		</extension>
-		
-		
-		<extension point="cerberusweb.iphone.page">
 			<id>iphone.login</id>
 			<name>iPhone Login Page</name>
 			<class>
@@ -49,19 +35,6 @@
 			<params>
 				<param key="uri" value="login" />
 				<param key="menutitle" value="" />
-			</params>
-		</extension>
-		
-		<extension point="cerberusweb.iphone.page">
-			<id>iphone.tickets</id>
-			<name>Tickets</name>
-			<class>
-				<file>classes.php</file>
-				<name>ChIPhoneTicketsPage</name>
-			</class>
-			<params>
-				<param key="uri" value="tickets" />
-				<param key="menutitle" value="Tickets" />
 			</params>
 		</extension>
 		

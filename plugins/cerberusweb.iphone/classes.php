@@ -144,7 +144,7 @@ class IPhoneController extends DevblocksControllerExtension {
 
 		// Default page [TODO] This is supposed to come from framework.config.php
 		if(empty($controller)) 
-			$controller = 'main';
+			$controller = 'home';
 
 	    // [JAS]: Require us to always be logged in for Cerberus pages
 	    // [TODO] This should probably consult with the page itself for ::authenticated()
@@ -269,86 +269,6 @@ class CerberusIPhonePageExtension extends DevblocksExtension {
 	}
 }
 
-//class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
-//    
-//	function __construct($manifest) {
-//		parent::__construct($manifest);
-//	}
-//	
-//	function isVisible() {
-//		return true;
-//	}
-//	
-//	function render() {
-//		$tpl = DevblocksPlatform::getTemplateService();
-//		$response = DevblocksPlatform::getHttpResponse();
-//		@$ticket_id = $response->path[2];
-//		@$page_type = DevblocksPlatform::importGPC($_REQUEST['page_type'],'string', 'reply');
-//		$message_id = $response->path[3];
-//		
-//		if (empty($ticket_id)) {
-//			$session = DevblocksPlatform::getSessionService();
-//			$visit = $session->getVisit();
-//			return;
-//		}
-//		
-//		if (!is_numeric($ticket_id)) {
-//			$ticket_id = DAO_Ticket::getTicketIdByMask($ticket_id);
-//		}
-//		
-//		$ticket = DAO_Ticket::getTicket($ticket_id);
-//		
-//		$tpl->assign('ticket', $ticket);
-//		$tpl->assign('ticket_id', $ticket_id);
-//		$tpl->assign('message_id', $message_id);
-//		$tpl->assign('page_type', $page_type);
-//
-//		if (0 == strcasecmp($message_id, 'full')) {
-//			$tpl->display('file:' . dirname(__FILE__) . '/templates/display.tpl');
-//		} else {
-//			$message = DAO_Ticket::getMessage($message_id);
-//			if (empty($message))
-//				$message = array_pop($ticket->getMessages());
-//			$tpl->assign('message', $message);
-//			$tpl->display('file:' . dirname(__FILE__) . '/templates/display_brief.tpl');
-//		}
-//		
-//	}
-//	
-//	function replyAction() {
-//		@$ticket_id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer',0);
-//
-//		@$message_id = DevblocksPlatform::importGPC($_REQUEST['message_id'],'integer');
-//		@$content = DevblocksPlatform::importGPC($_REQUEST['content'],'content');
-//		@$to = DevblocksPlatform::importGPC($_REQUEST['to'],'string'); // used by forward
-//		@$page_type = DevblocksPlatform::importGPC($_REQUEST['page_type'],'string');
-//		
-//		$worker = CerberusApplication::getActiveWorker();
-//		
-//		if($page_type == 'comment') {
-//			$properties = array(
-//				DAO_MessageNote::MESSAGE_ID => $message_id,
-//				DAO_MessageNote::CREATED => time(),
-//				DAO_MessageNote::WORKER_ID => @$worker->id,
-//				DAO_MessageNote::CONTENT => $content,
-//			);
-//			$note_id = DAO_MessageNote::create($properties);
-//		}
-//		else {
-//			$properties = array(
-//				'message_id' => $message_id,
-//				'content' => $content,
-//				'agent_id' => @$worker->id,
-//				'to' => $to
-//		    );
-//			CerberusMail::sendTicketMessage($properties);
-//		}
-//		
-//		DevblocksPlatform::redirect(new DevblocksHttpResponse(array('iphone','display', $ticket_id)));
-//	}
-//	
-//};
-
 class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
     const KEY_FORGOT_EMAIL = 'login.recover.email';
     const KEY_FORGOT_SENTCODE = 'login.recover.sentcode';
@@ -406,8 +326,7 @@ class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
 
 			$session->setVisit($visit);
 			
-			//$devblocks_response = new DevblocksHttpResponse(array('iphone','mytickets'));
-			$devblocks_response = new DevblocksHttpResponse(array('iphone','tickets'));
+			$devblocks_response = new DevblocksHttpResponse(array('iphone','home'));
 			
 		} else {
 			$devblocks_response = new DevblocksHttpResponse(array('iphone', 'login'));
@@ -416,241 +335,6 @@ class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
 		DevblocksPlatform::redirect($devblocks_response);
 	}
 };
-
-
-class ChIPhoneMainPage  extends CerberusIPhonePageExtension  {
-	function __construct($manifest) {
-		parent::__construct($manifest);
-	}
-	
-	function isVisible() {
-		return true;
-	}
-	
-	function drawResourceTags() {
-		echo "<script></script>";
-	}
-	
-	function render() {
-		//echo "<ul title=\"Cerb4\" selected=\"true\"><li href=\"/\">whatever</li></ul>";
-		//return;
-		
-		// draws HTML form of controls needed for login information
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->cache_lifetime = "0";
-		
-		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
-		//$translate = DevblocksPlatform::getTranslationService();
-		//$tpl->assign('translate', $translate);
-
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/main.tpl');
-	}
-	
-	function showNotificationsAction() {
-		
-	}
-	
-	function showWorkspacesAction() {
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->cache_lifetime = "0";
-		
-		$workspaces = DAO_WorkerWorkspaceList::getWorkspaces($active_worker->id);
-		
-
-//		print_r($workspaces);
-
-
-		$tpl->assign('workspaces', $workspaces);
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/workspaces.tpl');
-		
-	}
-	
-	function showWorkspaceViewsAction() {
-		$current_workspace = DevblocksPlatform::importGPC($_REQUEST['workspace'],'string','');
-
-		$db = DevblocksPlatform::getDatabaseService();
-
-		$active_worker = CerberusApplication::getActiveWorker();
-
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->cache_lifetime = "0";
-		
-//		// Fix a bad/old cache
-//		if(!empty($current_workspace) && false === array_search($current_workspace,$workspaces))
-//			$current_workspace = '';
-//		
-//		$views = array();
-//			
-//		if(empty($current_workspace) && !empty($workspaces)) { // custom dashboards
-//			$current_workspace = reset($workspaces);
-//		}
-		
-		if(!empty($current_workspace)) {
-			
-			$lists = DAO_WorkerWorkspaceList::getWhere(sprintf("%s = %d AND %s = %s",
-				DAO_WorkerWorkspaceList::WORKER_ID,
-				$active_worker->id,
-				DAO_WorkerWorkspaceList::WORKSPACE,
-				$db->qstr($current_workspace)
-			));
-
-			$tpl->assign('workspace_views', $lists);
-			$tpl->assign('current_workspace', $current_workspace);
-			$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/workspace_views.tpl');
-
-//	        // Loop through list schemas
-//			if(is_array($lists) && !empty($lists))
-//			foreach($lists as $list) { /* @var $list Model_WorkerWorkspaceList */
-//				
-//			}
-		}
-		
-		
-	}
-	
-	function showViewAction() {
-		
-		$view_id = DevblocksPlatform::importGPC($_REQUEST['view_id'],'integer',0);
-		
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->cache_lifetime = "0";
-		
-		$list = DAO_WorkerWorkspaceList::get($view_id);
-//		print_r($list);
-		$view_id = 'cust_'.$list->id;
-		if(null == ($view = C4_AbstractViewLoader::getView('',$view_id)) || 1==1) {
-			$list_view = $list->list_view; /* @var $list_view Model_WorkerWorkspaceListView */
-			
-			// Load the workspace sources to map to view renderer
-	        $source_manifests = DevblocksPlatform::getExtensions(Extension_WorkspaceSource::EXTENSION_POINT, false);
-			
-			
-			// Make sure we can find the workspace source (plugin not disabled)
-			if(!isset($source_manifests[$list->source_extension])
-				|| null == ($workspace_source = $source_manifests[$list->source_extension])
-				|| !isset($workspace_source->params['view_class'])) {print_r($list);
-				echo "there is a problem with the plugin required for this view";
-				return;
-			}
-			
-			// Make sure our workspace source has a valid renderer class
-			$view_class = $workspace_source->params['view_class'];
-//			if(!class_exists($view_class))
-//				continue;
-//				echo "hi";print_r($workspace_source);
-			$view = new C4_IPhoneTicketView;
-			$view->id = $view_id;
-			$view->name = $list_view->title;
-			$view->renderLimit = 10;
-			$view->renderPage = 0;
-			$view->view_columns = $list_view->columns;
-			$view->params = $list_view->params;
-			//C4_AbstractViewLoader::setView($view_id, $view);
-			
-			
-		}
-		//print_r($view);
-		$tpl->assign('view', $view);
-
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets.tpl');
-		
-	}
-	
-//	function showDisplayTicket() {
-//		
-//		@$id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
-//		
-//		@$active_worker = CerberusApplication::getActiveWorker();
-//		
-//		$tpl = DevblocksPlatform::getTemplateService();
-//		$tpl->assign('path', $this->_TPL_PATH);
-//		
-//		$ticket = DAO_Ticket::getTicket($id);
-//		$tpl->assign('ticket', $ticket);
-//		$tpl->assign('requesters', $ticket->getRequesters());
-//		
-//		arsort($messages);
-//				
-//		$tpl->assign('latest_message_id',key($messages));
-//		$tpl->assign('messages', $messages);
-//		
-//				// Thread comments and messages on the same level
-//		$convo_timeline = array();
-//
-//		// Track senders and their orgs
-//		$message_senders = array();
-//		$message_sender_orgs = array();
-//
-//		// Loop messages
-//		foreach($messages as $message_id => $message) { /* @var $message CerberusMessage */
-//			$key = $message->created_date . '_m' . $message_id;
-//			// build a chrono index of messages
-//			$convo_timeline[$key] = array('m',$message_id);
-//			
-//			// If we haven't cached this sender address yet
-//			if(!isset($message_senders[$message->address_id])) {
-//				if(null != ($sender_addy = DAO_Address::get($message->address_id))) {
-//					$message_senders[$sender_addy->id] = $sender_addy;	
-//
-//					// If we haven't cached this sender org yet
-//					if(!isset($message_sender_orgs[$sender_addy->contact_org_id])) {
-//						if(null != ($sender_org = DAO_ContactOrg::get($sender_addy->contact_org_id))) {
-//							$message_sender_orgs[$sender_org->id] = $sender_org;
-//						}
-//					}
-//				}
-//			}
-//		}
-//		
-//		$tpl->assign('message_senders', $message_senders);
-//		$tpl->assign('message_sender_orgs', $message_sender_orgs);
-//		
-//		@$mail_inline_comments = DAO_WorkerPref::get($active_worker->id,'mail_inline_comments',1);
-//		
-//		if($mail_inline_comments) { // if inline comments are enabled
-//			$comments = DAO_TicketComment::getByTicketId($id);
-//			arsort($comments);
-//			$tpl->assign('comments', $comments);
-//			
-//			// build a chrono index of comments
-//			foreach($comments as $comment_id => $comment) { /* @var $comment Model_TicketComment */
-//				$key = $comment->created . '_c' . $comment_id;
-//				$convo_timeline[$key] = array('c',$comment_id);
-//			}
-//		}
-//		
-//		// sort the timeline
-//		if(!$expand_all) {
-//			krsort($convo_timeline);
-//		} else {
-//			ksort($convo_timeline);
-//		}
-//		$tpl->assign('convo_timeline', $convo_timeline);
-//		
-////		// Message toolbar items
-////		$messageToolbarItems = DevblocksPlatform::getExtensions('cerberusweb.message.toolbaritem', true);
-////		if(!empty($messageToolbarItems))
-////			$tpl->assign('message_toolbaritems', $messageToolbarItems);
-//		
-//		// Workers
-//		$workers = DAO_Worker::getAll();
-//		$tpl->assign('workers', $workers);
-//		
-//		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
-//		
-//		$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/display.tpl');
-//		
-//	}
-	
-	function showWorkflow() {
-		
-	}
-	
-	function showOverview() {
-		
-	}
-};
-
 
 
 class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
@@ -674,6 +358,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
 		
+		$tpl->assign('current_tab', "mail");
 		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
 		//$translate = DevblocksPlatform::getTranslationService();
 		//$tpl->assign('translate', $translate);
@@ -682,10 +367,6 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		//echo $web_path;
 		$mask = substr(strrchr($web_path, "/"), 1);
 		$id = DAO_Ticket::getTicketIdByMask($mask);
-		
-		
-		//echo substr($web_path, strrchr($web_path, "/"));
-		
 		
 			
 		//@$id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
@@ -706,7 +387,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$tpl->assign('latest_message_id',key($messages));
 		$tpl->assign('messages', $messages);
 		
-				// Thread comments and messages on the same level
+		// Thread comments and messages on the same level
 		$convo_timeline = array();
 
 		// Track senders and their orgs
@@ -771,14 +452,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
 		
 		
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/display.tpl');
-		//$tpl->display('file:' . dirname(__FILE__) . '/templates/display/display2.tpl');
-
-		
-		
-		
-		
-		//$tpl->display('file:' . dirname(__FILE__) . '/templates/main.tpl');
+		$tpl->display('file:' . dirname(__FILE__) . '/templates/display/display.tpl');
 		
 	}
 
@@ -819,7 +493,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$tpl->assign('expanded', (empty($hide) ? true : false));
 		
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
-		$tpl->display('file:' . $tpl_path . 'tickets/message_content.tpl');
+		$tpl->display('file:' . $tpl_path . 'display/message_content.tpl');
 		
 	}
 	
@@ -855,6 +529,8 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
 		//$translate = DevblocksPlatform::getTranslationService();
 		//$tpl->assign('translate', $translate);
+		$tpl->assign('path', dirname(__FILE__). "/templates");
+		$tpl->assign('current_tab', "home");
 
 
 		$workspaces = DAO_WorkerWorkspaceList::getWorkspaces($active_worker->id);
@@ -941,7 +617,6 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 			$view_class = $workspace_source->params['view_class'];
 //			if(!class_exists($view_class))
 //				continue;
-//				echo "hi";print_r($workspace_source);
 			$view = new C4_IPhoneTicketView;
 			$view->id = $view_id;
 			$view->name = $list_view->title;
@@ -960,257 +635,6 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 		
 	}
 
-};
-
-
-
-
-
-class ChIPhoneTicketsPage extends CerberusIPhonePageExtension  {
-    
-	function __construct($manifest) {
-		parent::__construct($manifest);
-	}
-	
-	function isVisible() {
-		return true;
-	}
-	
-	function render() {
-		$tpl = DevblocksPlatform::getTemplateService();
-		$active_worker = CerberusApplication::getActiveWorker();
-		$memberships = $active_worker->getMemberships();
-		
-		$response = DevblocksPlatform::getHttpResponse();
-		@$section = $response->path[1];
-		
-		//print_r($_REQUEST);exit();
-		//@$page = DevblocksPlatform::importGPC($_GET['password']);
-		@$page = DevblocksPlatform::importGPC($_REQUEST['page'],'integer');
-		if($page==NULL) $page=0;
-		
-		if(isset($_POST['a2'])) {
-			@$section = $_POST['a2'];
-		}
-		else {
-			@$section = $response->path[2];	
-		}
-		
-		//print_r($section);
-		//echo $section;
-		switch($section) {
-			case 'search':
-				$title = 'Search';
-				$query = $_POST['query'];
-				if($query && false===strpos($query,'*'))
-					$query = '*' . $query . '*';
-				
-				if(!is_null($query)) {
-					$params = array();
-					$type = $_POST['type'];
-					switch($type) {
-			            case "mask":
-			                $params[SearchFields_Ticket::TICKET_MASK] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_MASK,DevblocksSearchCriteria::OPER_LIKE,strtoupper($query));
-			                break;
-			                
-			            case "sender":
-			                $params[SearchFields_Ticket::TICKET_FIRST_WROTE] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_FIRST_WROTE,DevblocksSearchCriteria::OPER_LIKE,strtolower($query));               
-			                break;
-			                
-			            case "subject":
-			                $params[SearchFields_Ticket::TICKET_SUBJECT] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_SUBJECT,DevblocksSearchCriteria::OPER_LIKE,$query);               
-			                break;
-			                
-			            case "content":
-			                $params[SearchFields_Ticket::TICKET_MESSAGE_CONTENT] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_MESSAGE_CONTENT,DevblocksSearchCriteria::OPER_LIKE,$query);               
-			                break;
-					}
-				}
-				else {
-					//show the search form because no search has been submitted
-					$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/search.tpl');
-					return;
-				}
-			break;
-            case 'sidebar':
-            			
-				$groups = DAO_Group::getAll();
-				$tpl->assign('groups', $groups);
-				
-				$group_buckets = DAO_Bucket::getTeams();
-				$tpl->assign('group_buckets', $group_buckets);
-				
-				$workers = DAO_Worker::getAll();
-				$tpl->assign('workers', $workers);
-				
-				$group_counts = DAO_Overview::getGroupTotals();
-				$tpl->assign('group_counts', $group_counts);
-				
-				$waiting_counts = DAO_Overview::getWaitingTotals();
-				$tpl->assign('waiting_counts', $waiting_counts);
-				
-				$worker_counts = DAO_Overview::getWorkerTotals();
-				$tpl->assign('worker_counts', $worker_counts);
-				
-            	$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets/sidebar.tpl');
-            	return;
-           	break;
-			case 'overview':
-			default:
-				
-				$workers = DAO_Worker::getAll();						
-				$group_buckets = DAO_Bucket::getTeams();
-				$groups = DAO_Group::getAll();
-				@$filter = $response->path[3];	
-				switch($filter) {
-					case 'group':
-						@$filter_group_id = $response->path[4];
-						
-						$params = array(
-							SearchFields_Ticket::TICKET_CLOSED => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CLOSED,'=',CerberusTicketStatus::OPEN),
-							SearchFields_Ticket::TICKET_WAITING => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_WAITING,'=',0),
-							SearchFields_Ticket::TICKET_NEXT_WORKER_ID => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_NEXT_WORKER_ID,'=',0),
-						);
-						
-						if(!is_null($filter_group_id) && isset($groups[$filter_group_id])) {
-							$tpl->assign('filter_group_id', $filter_group_id);
-							$title = $groups[$filter_group_id]->name;
-							$params[SearchFields_Ticket::TEAM_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TEAM_ID,'=',$filter_group_id);
-							
-							@$filter_bucket_id = $response->path[5];
-							if(!is_null($filter_bucket_id)) {
-								$tpl->assign('filter_bucket_id', $filter_bucket_id);
-								@$title .= ': '.
-									(($filter_bucket_id == 0) ? 'Inbox' : $group_buckets[$filter_group_id][$filter_bucket_id]->name);
-								$params[SearchFields_Ticket::TICKET_CATEGORY_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CATEGORY_ID,'=',$filter_bucket_id);
-							} else {
-								@$title .= ' (Spam Filtered)';
-								$params[SearchFields_Ticket::TICKET_SPAM_SCORE] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_SPAM_SCORE,'<=','0.9000');								
-							}
-						}
-
-						break;
-						
-					case 'waiting':
-						@$filter_waiting_id = $response->path[4];
-						
-						$params = array(
-							SearchFields_Ticket::TICKET_CLOSED => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CLOSED,'=',CerberusTicketStatus::OPEN),
-							SearchFields_Ticket::TICKET_WAITING => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_WAITING,'=',1),
-						);
-						
-						if(!is_null($filter_waiting_id) && isset($groups[$filter_waiting_id])) {
-							$tpl->assign('filter_waiting_id', $filter_waiting_id);
-							$title = '[Waiting] ' . $groups[$filter_waiting_id]->name;
-							$params[SearchFields_Ticket::TEAM_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TEAM_ID,'=',$filter_waiting_id);
-							
-							@$filter_bucket_id = $response->path[5];
-							if(!is_null($filter_bucket_id)) {
-								$tpl->assign('filter_bucket_id', $filter_bucket_id);
-								@$title .= ': '.
-									(($filter_bucket_id == 0) ? 'Inbox' : $group_buckets[$filter_waiting_id][$filter_bucket_id]->name);
-								$params[SearchFields_Ticket::TICKET_CATEGORY_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CATEGORY_ID,'=',$filter_bucket_id);
-							}
-						}
-
-						break;
-						
-					case 'worker':
-						@$filter_worker_id = $response->path[4];
-
-						$params = array(
-							SearchFields_Ticket::TICKET_CLOSED => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CLOSED,'=',CerberusTicketStatus::OPEN),
-							SearchFields_Ticket::TICKET_WAITING => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_WAITING,'=',0),
-							$params[SearchFields_Ticket::TEAM_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TEAM_ID,'in',array_keys($memberships)), // censor
-						);
-
-						if(!is_null($filter_worker_id)) {
-							$tpl->assign('filter_bucket_id', $filter_bucket_id);
-							$title = "For ".$workers[$filter_worker_id]->getName();
-							$params[SearchFields_Ticket::TICKET_NEXT_WORKER_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_NEXT_WORKER_ID,'=',$filter_worker_id);
-							
-							@$filter_group_id = $response->path[5];
-							if(!is_null($filter_group_id) && isset($groups[$filter_group_id])) {
-								$title .= ' in '.$groups[$filter_group_id]->name;
-								$params[SearchFields_Ticket::TEAM_ID] = new DevblocksSearchCriteria(SearchFields_Ticket::TEAM_ID,'=',$filter_group_id);
-							}
-						}
-						
-						break;
-						
-					case 'all':
-					default:
-						$title='All (Spam Filtered)';
-						$params = array(
-							SearchFields_Ticket::TICKET_CLOSED => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CLOSED,'=',CerberusTicketStatus::OPEN),
-							SearchFields_Ticket::TICKET_WAITING => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_WAITING,'=',0),
-							SearchFields_Ticket::TICKET_NEXT_WORKER_ID => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_NEXT_WORKER_ID,'=',0),
-							SearchFields_Ticket::TICKET_SPAM_SCORE => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_SPAM_SCORE,'<=','0.9000'),
-							SearchFields_Ticket::TEAM_ID => new DevblocksSearchCriteria(SearchFields_Ticket::TEAM_ID,'in',array_keys($memberships)),
-						);
-						
-						break;
-				}
-				
-//				$params = array(
-//						new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_CLOSED,'=',CerberusTicketStatus::OPEN),
-//						new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_NEXT_WORKER_ID,'=',0),
-//						new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_SPAM_SCORE,'<=','0.9000'),
-//						new DevblocksSearchCriteria(SearchFields_Ticket::TEAM_ID,'in',array_keys($memberships))					
-//				);
-				
-
-				
-//				$title = "Overview";				
-			break;
-		}
-		
-		$mobileView = C4_AbstractViewLoader::getView('', "VIEW_IPHONE");
-		//print_r($mobileView);		
-		if($mobileView == NULL) {
-			$mobileView = new C4_IPhoneTicketView();//C4_TicketView();
-		}
-		$mobileView->id = "VIEW_IPHONE";
-		$mobileView->name = $title;
-		$mobileView->view_columns = array(SearchFields_Ticket::TICKET_LAST_ACTION_CODE);
-		$mobileView->params = $params;
-		$mobileView->renderLimit = 10;//$overViewDefaults->renderLimit;
-		$mobileView->renderPage = $page;
-		$mobileView->renderSortBy = SearchFields_Ticket::TICKET_UPDATED_DATE;
-		$mobileView->renderSortAsc = 0;
-		
-		C4_AbstractViewLoader::setView($mobileView->id,$mobileView);		
-		
-		$views[] = $mobileView;
-	
-		$tpl->assign('views', $views);
-
-		if($filter==null) {
-			$filter = 'all';
-		}
-		$tpl->assign('filter', $filter);
-		
-		$fid = $response->path[4];
-		if($fid == null ) {
-			$fid = '0';
-		}
-		$tpl->assign('fid', $fid);
-		
-		$bucket_id = $response->path[5];
-		if($bucket_id == null) {
-			$buket_id = 0;
-		}
-		$tpl->assign('bid', $bucket_id);
-		
-		$tpl->assign('title', $title);
-		$tpl->assign('tickets', $tickets[0]);
-		$tpl->assign('next_page', $page+1);
-		$tpl->assign('prev_page', $page-1);
-		
-		//print_r($tickets);exit();
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/tickets.tpl');
-	}
-	
 };
 
 ?>

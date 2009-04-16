@@ -1,12 +1,4 @@
-<div id="top_nav">
-	<img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/c4_logo_20.gif{/devblocks_url}" align="top">
-	<ul id="top_tabs">
-		<li><a href="{devblocks_url}c=resource&p=cerberusweb.iphone&f=iphone/home{/devblocks_url}">home</a></li>{strip}
-		{/strip}<li class="top_tabs_selected"><a href="#">mail</a></li>{strip}
-		{/strip}<li><a href="#">activity</a></li>
-
-	</ul>
-</div>
+{include file="$path/top_nav.tpl"}
 <div id="toolbar">
 	<div id="tb">
 
@@ -129,14 +121,14 @@
 {*				<div id="{$message->id}t" style="background-color:rgb(255,255,255);"> *}
 					{assign var=expanded value=false}
 					{if $expand_all || $latest_message_id==$message_id || isset($message_notes.$message_id)}{assign var=expanded value=true}{/if}
-					{include file="$path/tickets/message.tpl" expanded=$expanded}
+					{include file="$path/display/message.tpl" expanded=$expanded}
 {*				</div> *}
 				
 			{elseif $convo_set.0=='c'}
 				{assign var=comment_id value=$convo_set.1}
 				{assign var=comment value=$comments.$comment_id}
 				<div id="comment{$comment->id}" style="background-color:rgb(255,255,255);">
-					{include file="$path/tickets/comment.tpl"}
+					{include file="$path/display/comment.tpl"}
 				</div>
 			{/if}
 			
@@ -150,5 +142,5 @@
 </div>
 
 <div id="reply">
-	{include file="$path/tickets/reply.tpl"}
+	{include file="$path/display/reply.tpl"}
 </div>
