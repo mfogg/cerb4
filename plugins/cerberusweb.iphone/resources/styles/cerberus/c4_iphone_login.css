@@ -1,0 +1,11 @@
+body {
+	font-family: Helvetica;
+}
+
+div.block {
+	padding: 5px;
+	background-image: url(bg_block.jpg);
+	background-repeat: repeat-x;
+	background-color: rgb(255, 255, 255);
+	border: 1px solid rgb(180,180,180);
+}

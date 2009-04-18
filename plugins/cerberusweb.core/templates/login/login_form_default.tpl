@@ -6,9 +6,14 @@
 <input type="hidden" name="original_path" value="{$original_path}">
 <input type="hidden" name="original_query" value="{$original_query}">
 <table cellpadding="0" cellspacing="2">
+{if $login_failed}
+<tr>
+	<td colspan="2" align="right" valign="middle" style="color:red;">Invalid Login</td>
+</tr>
+{/if}
 <tr>
 	<td align="right" valign="middle">E-mail:</td>
-	<td><input type="text" name="email" size="45" id="loginForm_email"></td>
+	<td><input type="text" name="email" size="45" id="loginForm_email" autocorrect="off" autocapitalize="off" placeholder="Letters"></td>
 </tr>
 <tr>
 	<td align="right" valign="middle">Password:</td>

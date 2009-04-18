@@ -278,6 +278,13 @@ class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
 		parent::__construct($manifest);
 	}
 	
+	function drawResourceTags() {
+		$tpl = DevblocksPlatform::getTemplateService();
+
+		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
+		$tpl->display('file:' . $tpl_path . 'login/login_head.tpl');
+	}
+	
 	function isVisible() {
 		return true;
 	}
@@ -295,14 +302,23 @@ class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
 		$prefix = '';
 		$query_str = '';
 		foreach($request->query as $key=>$val) {
-			$query_str .= $prefix . $key . '=' . $val;
-			$prefix = '&';
+			if($key != 'login_failed') {
+				$query_str .= $prefix . $key . '=' . $val;
+				$prefix = '&';
+			}
 		}
 		
 		//$url_service = DevblocksPlatform::getUrlService();
 		//$original_url = $url_service->writeDevblocksHttpIO($request);
 		
 		//$tpl->assign('original_url', $original_url);
+		foreach($request->path as $key=>$val) {
+			if($val == 'login_failed') {
+				unset($request->path[$key]);
+				$tpl->assign('login_failed', "1");
+				break;
+			}
+		}
 		$original_path = (sizeof($request->path)==0) ? 'login' : implode(',',$request->path);
 		
 		$tpl->assign('original_path', $original_path);
@@ -329,7 +345,7 @@ class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
 			$devblocks_response = new DevblocksHttpResponse(array('iphone','home'));
 			
 		} else {
-			$devblocks_response = new DevblocksHttpResponse(array('iphone', 'login'));
+			$devblocks_response = new DevblocksHttpResponse(array('iphone', 'login', 'login_failed'));
 			//return false;
 		}
 		DevblocksPlatform::redirect($devblocks_response);
