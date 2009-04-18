@@ -149,3 +149,32 @@ ul.view_list li.view_list_item td span.view_next_out {
 
 ul.view_list li.view_list_item td span.view_next_new {
 }
+
+div.view_paging {
+	display: none;
+	width: 250px ;
+	margin-left: auto ;
+	margin-right: auto ;
+	/* background-color: red; */
+	text-align: center;
+}
+
+div.view_paging span {
+	display: inline-block;
+	border: 1px solid #000;
+	margin: 0 5px;
+	padding: 5px 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	background-color: #CCCCCC;
+	text-shadow: 1px 1px 1px #000000;
+
+
+}
+
+div.view_paging span a {
+	text-decoration: none;
+	/*color: #6487D5;*/
+	color: #FFFFFF;
+	font: Bold 10pt Verdana;
+}

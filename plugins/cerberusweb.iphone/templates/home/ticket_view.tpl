@@ -1,18 +1,10 @@
 {assign var=total value=$results[1]}
 {assign var=tickets value=$results[0]}
-
+<div class="worklist_content_container">
 <ul selected="true" class="view_list" title="{$view->name}">
 
 	{* Column Data *}
 	{foreach from=$tickets item=result key=idx name=results}
-
-	{assign var=rowIdPrefix value="row_"|cat:$view->id|cat:"_"|cat:$result.t_id}
-	{if $smarty.foreach.results.iteration % 2}
-		{assign var=tableRowBg value="tableRowBg"}
-	{else}
-		{assign var=tableRowBg value="tableRowAltBg"}
-	{/if}
-	
 		<li class="view_list_item" onclick="window.location.href='/cerb4/iphone/display/{$result.t_mask}';">
 				<b id="subject_{$result.t_id}_{$view->id}">
 				{if $result.t_is_closed}<strike>{/if}
@@ -20,7 +12,6 @@
 				{if $result.t_is_closed}</strike>{/if}
 				</b>
 			<br />
-			<!-- {$smarty.const.DEVBLOCKS_WEBPATH} -->
 			<table>
 				<tr>
 					{* <td width="14"></td> *}
@@ -60,31 +51,19 @@
 	{/foreach}
 	
 </ul>
+{math assign=fromRow equation="(x*y)+1" x=$view->renderPage y=$view->renderLimit}
+{math assign=toRow equation="(x-1)+y" x=$fromRow y=$view->renderLimit}
+{math assign=nextPage equation="x+1" x=$view->renderPage}
+{math assign=prevPage equation="x-1" x=$view->renderPage}
+{math assign=lastPage equation="ceil(x/y)-1" x=$total y=$view->renderLimit}	
+
+<!-- Sanity checks -->
+{if $toRow > $total}{assign var=toRow value=$total}{/if}
+{if $fromRow > $toRow}{assign var=fromRow value=$toRow}{/if}	
+
+<div class="dval dval_view_paging">{literal}{{/literal}currentPage:"{$view->renderPage}",fromRow:"{$fromRow}",toRow:"{$toRow}",nextPage:"{$nextPage}",prevPage:"{$prevPage}",lastPage:"{$lastPage}",total:"{$total}",pageDesc:"{'views.showing_from_to'|devblocks_translate:$fromRow:$toRow:$total}"{literal}}{/literal}</div>
+
+</div>
 
 
-<table cellpadding="2" cellspacing="0" border="0" width="100%" class="tableBg" id="{$view->id}_actions">
-	<tr>
-		<td align="right" valign="top" nowrap="nowrap">
-			{math assign=fromRow equation="(x*y)+1" x=$view->renderPage y=$view->renderLimit}
-			{math assign=toRow equation="(x-1)+y" x=$fromRow y=$view->renderLimit}
-			{math assign=nextPage equation="x+1" x=$view->renderPage}
-			{math assign=prevPage equation="x-1" x=$view->renderPage}
-			{math assign=lastPage equation="ceil(x/y)-1" x=$total y=$view->renderLimit}
-			
-			<!-- Sanity checks -->
-			{if $toRow > $total}{assign var=toRow value=$total}{/if}
-			{if $fromRow > $toRow}{assign var=fromRow value=$toRow}{/if}
-			
-			{if $view->renderPage > 0}
-				<a href="{devblocks_url}c=mobile&a=tickets&a2=overview&filter={$filter}&fid={$fid}&b={$bid}{/devblocks_url}?page=0">&lt;&lt;</a>
-				<a href="{devblocks_url}c=mobile&a=tickets&a2=overview&filter={$filter}&fid={$fid}&b={$bid}{/devblocks_url}?page={$prevPage}" >&lt;{$translate->_('common.previous_short')|capitalize}</a>
-			{/if}
-			({'views.showing_from_to'|devblocks_translate:$fromRow:$toRow:$total})
-			{if $toRow < $total}
-				<a href="{devblocks_url}c=mobile&a=tickets&a2=overview&filter={$filter}&fid={$fid}&b={$bid}{/devblocks_url}?page={$nextPage}">{$translate->_('common.next')|capitalize}&gt;</a>
-				<a href="{devblocks_url}c=mobile&a=tickets&a2=overview&filter={$filter}&fid={$fid}&b={$bid}{/devblocks_url}?page={$lastPage}">&gt;&gt;</a>
-			{/if}
-		</td>
-	</tr>
-</table>
 

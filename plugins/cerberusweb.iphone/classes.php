@@ -233,17 +233,17 @@ class C4_IPhoneTicketView extends C4_TicketView {
 		$team_categories = DAO_Bucket::getTeams();
 		$tpl->assign('team_categories', $team_categories);
 
-		// [TODO] Is this used here
-		$ticket_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
-		$tpl->assign('ticket_fields', $ticket_fields);
-		
-		// Undo?
-		// [TODO] Is this used here
-		$last_action = C4_TicketView::getLastAction($this->id);
-		$tpl->assign('last_action', $last_action);
-		if(!empty($last_action) && !is_null($last_action->ticket_ids)) {
-			$tpl->assign('last_action_count', count($last_action->ticket_ids));
-		}
+//		// [TODO] Is this used here
+//		$ticket_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
+//		$tpl->assign('ticket_fields', $ticket_fields);
+//		
+//		// Undo?
+//		// [TODO] Is this used here
+//		$last_action = C4_TicketView::getLastAction($this->id);
+//		$tpl->assign('last_action', $last_action);
+//		if(!empty($last_action) && !is_null($last_action->ticket_ids)) {
+//			$tpl->assign('last_action_count', count($last_action->ticket_ids));
+//		}
 
 		$tpl->cache_lifetime = "0";
 		$tpl->assign('view_fields', $this->getColumns());
@@ -591,6 +591,7 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 
 	function showViewAction() {
 		$view_id = DevblocksPlatform::importGPC($_REQUEST['view_id'],'integer',0);
+		$page_num = DevblocksPlatform::importGPC($_REQUEST['page'],'integer',0);
 		
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
@@ -598,6 +599,8 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 		$list = DAO_WorkerWorkspaceList::get($view_id);
 //		print_r($list);
 		$view_id = 'cust_'.$list->id;
+		
+		//TODO probably want to allow caching sometimes
 		if(null == ($view = C4_AbstractViewLoader::getView('',$view_id)) || 1==1) {
 			$list_view = $list->list_view; /* @var $list_view Model_WorkerWorkspaceListView */
 			
@@ -620,18 +623,15 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 			$view = new C4_IPhoneTicketView;
 			$view->id = $view_id;
 			$view->name = $list_view->title;
-			$view->renderLimit = 10;
-			$view->renderPage = 0;
+			$view->renderLimit = 5;
+			$view->renderPage = $page_num;
 			$view->view_columns = $list_view->columns;
 			$view->params = $list_view->params;
 			//C4_AbstractViewLoader::setView($view_id, $view);
 			
-			
 		}
-		//print_r($view);
-		$tpl->assign('view', $view);
 
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/home/tickets.tpl');
+		$view->render();
 		
 	}
 

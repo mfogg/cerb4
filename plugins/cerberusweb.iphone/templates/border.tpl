@@ -14,6 +14,10 @@ var DevblocksAppPath = '{/literal}{$smarty.const.DEVBLOCKS_WEBPATH}{literal}';
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
 }
+
+addEventListener('load', function() { setTimeout(hideAddressBar, 0); }, false);
+function hideAddressBar() { window.scrollTo(0, 1); }
+
 {/literal}
 </script>
 
@@ -25,6 +29,8 @@ String.prototype.trim = function() {
 {else}
 	{$translate->_('header.no_page')}
 {/if}
+
+<div style="visibility: hidden; height: 325px;"></div>
 
 </body>
 </html>
