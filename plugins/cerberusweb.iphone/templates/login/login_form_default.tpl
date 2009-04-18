@@ -24,12 +24,12 @@
 {/if}
 <tr>
 	<td align="right" valign="middle">E-mail:</td>
-	<td><input type="text" name="email" size="25" id="loginForm_email" autocorrect="off" autocapitalize="off"></td>
+	<td><input type="text" name="email" size="20" id="loginForm_email" autocorrect="off" autocapitalize="off"></td>
 </tr>
 <tr>
 	<td align="right" valign="middle">Password:</td>
 	<td nowrap="nowrap">
-		<input type="password" name="password" size="25" id="loginForm_password"/>
+		<input type="password" name="password" size="20" id="loginForm_password"/>
 	</td>
 </tr>
 <tr>
