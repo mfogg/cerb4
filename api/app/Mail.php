@@ -823,6 +823,7 @@ class CerberusMail {
 	            )
 		    );
 		}
+		return $message_id;
 	}
 	
 	static function reflect(CerberusParserMessage $message, $to) {

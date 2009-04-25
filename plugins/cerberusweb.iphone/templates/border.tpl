@@ -11,6 +11,7 @@
 
 <script>{literal}
 var DevblocksAppPath = '{/literal}{$smarty.const.DEVBLOCKS_WEBPATH}{literal}';
+var activeWorkerId = '{/literal}{$active_worker->id}{literal}';
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
 }

@@ -1,6 +1,6 @@
 {include file="$path/top_nav.tpl"}
 <div id="toolbar">
-	<div id="tb">
+	<div id="tb_display" class="tb">
 
 			{if !$ticket->is_deleted}
 				{if $ticket->is_closed}
@@ -27,7 +27,9 @@
 			{*
 			<a href="javascript:none();" onclick="replyButton(event);"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/export2.png{/devblocks_url}" align="top"></a>
 			*}
-
+	</div>
+	<div id="tb_reply" class="tb">
+		<a href="javascript:none();" id="tb_btn_back_display"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/arrow_left_green.png{/devblocks_url}" align="top"></a>		
 	</div>
 </div>
 
@@ -107,9 +109,16 @@
 			<td class="label">ID:</td>
 			<td>{$ticket->id}</td>
 		</tr>
+		<tr>
+			<td class="label">Worker:</td>
+			<td>{$ticket->next_worker_id}</td>
+			<td width="30"></td>
+			<td class="label"></td>
+			<td></td>
+		</tr>
 		
 	</table>
-	
+	<div class="dval nextWorkerId">{$ticket->next_worker_id}</div>
 </div>
 
 <div id="conversation">
@@ -118,7 +127,7 @@
 			{if $convo_set.0=='m'}
 				{assign var=message_id value=$convo_set.1}
 				{assign var=message value=$messages.$message_id}
-{*				<div id="{$message->id}t" style="background-color:rgb(255,255,255);"> *}
+{*				<div style="background-color:rgb(255,255,255);"> *}
 					{assign var=expanded value=false}
 					{if $expand_all || $latest_message_id==$message_id || isset($message_notes.$message_id)}{assign var=expanded value=true}{/if}
 					{include file="$path/display/message.tpl" expanded=$expanded}
@@ -127,7 +136,7 @@
 			{elseif $convo_set.0=='c'}
 				{assign var=comment_id value=$convo_set.1}
 				{assign var=comment value=$comments.$comment_id}
-				<div id="comment{$comment->id}" style="background-color:rgb(255,255,255);">
+				<div style="background-color:rgb(255,255,255);">
 					{include file="$path/display/comment.tpl"}
 				</div>
 			{/if}

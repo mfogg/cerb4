@@ -370,6 +370,41 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 	}
 	
 	
+	function getTimelineAndSenders($messages) {
+		// Thread comments and messages on the same level	
+		$convo_timeline = array();
+		// Track senders and their orgs
+		$message_senders = array();
+		$message_sender_orgs = array();
+
+		// Loop messages
+		foreach($messages as $message_id => $message) { /* @var $message CerberusMessage */
+			$key = $message->created_date . '_m' . $message_id;
+			// build a chrono index of messages
+			$convo_timeline[$key] = array('m',$message_id);
+			
+			// If we haven't cached this sender address yet
+			if(!isset($message_senders[$message->address_id])) {
+				if(null != ($sender_addy = DAO_Address::get($message->address_id))) {
+					$message_senders[$sender_addy->id] = $sender_addy;	
+
+					// If we haven't cached this sender org yet
+					if(!isset($message_sender_orgs[$sender_addy->contact_org_id])) {
+						if(null != ($sender_org = DAO_ContactOrg::get($sender_addy->contact_org_id))) {
+							$message_sender_orgs[$sender_org->id] = $sender_org;
+						}
+					}
+				}
+			}
+		}
+		
+		return array(
+				'convo_timeline'=>$convo_timeline,
+				'message_senders'=>$message_senders,
+				'message_sender_orgs'=>$message_sender_orgs
+		);		
+	}
+	
 	function render() {
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
@@ -402,34 +437,12 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 				
 		$tpl->assign('latest_message_id',key($messages));
 		$tpl->assign('messages', $messages);
-		
-		// Thread comments and messages on the same level
-		$convo_timeline = array();
 
-		// Track senders and their orgs
-		$message_senders = array();
-		$message_sender_orgs = array();
 
-		// Loop messages
-		foreach($messages as $message_id => $message) { /* @var $message CerberusMessage */
-			$key = $message->created_date . '_m' . $message_id;
-			// build a chrono index of messages
-			$convo_timeline[$key] = array('m',$message_id);
-			
-			// If we haven't cached this sender address yet
-			if(!isset($message_senders[$message->address_id])) {
-				if(null != ($sender_addy = DAO_Address::get($message->address_id))) {
-					$message_senders[$sender_addy->id] = $sender_addy;	
-
-					// If we haven't cached this sender org yet
-					if(!isset($message_sender_orgs[$sender_addy->contact_org_id])) {
-						if(null != ($sender_org = DAO_ContactOrg::get($sender_addy->contact_org_id))) {
-							$message_sender_orgs[$sender_org->id] = $sender_org;
-						}
-					}
-				}
-			}
-		}
+		$result = self::getTimelineAndSenders($messages);
+		$convo_timeline = $result['convo_timeline'];
+		$message_senders = $result['message_senders'];
+		$message_sender_orgs = $result['message_sender_orgs'];
 		
 		$tpl->assign('message_senders', $message_senders);
 		$tpl->assign('message_sender_orgs', $message_sender_orgs);
@@ -505,12 +518,88 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 //		}
 //		$tpl->assign('message_notes', $message_notes);
 
-		
-		$tpl->assign('expanded', (empty($hide) ? true : false));
+
+		//$tpl->assign('expanded', false);
+		//$tpl->assign('fetch_content', true);
 		
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
 		$tpl->display('file:' . $tpl_path . 'display/message_content.tpl');
 		
+	}
+
+	function sendReplyAction() {
+	    @$ticket_id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
+	    
+		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl->cache_lifetime = "0";
+		
+		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
+		
+	    $worker = CerberusApplication::getActiveWorker();
+
+		$properties = array(
+		    'message_id' => DevblocksPlatform::importGPC($_REQUEST['message_id']),
+		    'ticket_id' => $ticket_id,
+		    'to' => DevblocksPlatform::importGPC($_REQUEST['to']),
+		    'cc' => DevblocksPlatform::importGPC($_REQUEST['cc']),
+		    'bcc' => DevblocksPlatform::importGPC($_REQUEST['bcc']),
+		    'subject' => DevblocksPlatform::importGPC($_REQUEST['subject'],'string'),
+		    'content' => DevblocksPlatform::importGPC($_REQUEST['content']),
+		    'next_worker_id' => DevblocksPlatform::importGPC($_REQUEST['next_worker_id'],'integer',0),
+		    'closed' => DevblocksPlatform::importGPC($_REQUEST['closed'],'integer',0),
+		    'bucket_id' => DevblocksPlatform::importGPC($_REQUEST['bucket_id'],'string',''),
+		    'ticket_reopen' => DevblocksPlatform::importGPC($_REQUEST['ticket_reopen'],'string',''),
+		    'unlock_date' => DevblocksPlatform::importGPC($_REQUEST['unlock_date'],'string',''),
+		    'agent_id' => @$worker->id,
+		);
+
+		$message_id = CerberusMail::sendTicketMessage($properties);
+		
+		$params = array(DAO_Message::ID=>$message_id);
+		$message = DAO_Ticket::getMessage($message_id);
+
+		$message_senders = array();
+		$message_sender_orgs = array();
+		if(null != ($sender_addy = DAO_Address::get($message->address_id))) {
+			$message_senders[$sender_addy->id] = $sender_addy;	
+			if(null != ($sender_org = DAO_ContactOrg::get($sender_addy->contact_org_id))) {
+				$message_sender_orgs[$sender_org->id] = $sender_org;
+			}
+		}
+
+
+		
+
+		$tpl->assign('message_senders', $message_senders);
+		$tpl->assign('message_sender_orgs', $message_sender_orgs);
+		$tpl->assign('message', $message);
+		
+		$tpl->assign('expanded', false);
+		$tpl->assign('fetch_content', true);
+		
+		//$tpl->assign('active_worker', "");
+
+
+		//echo CerberusUtils::smarty_modifier_makehrefs("whatevers");
+		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
+		
+		
+		
+		
+		//$message
+		//message_senders
+		//translations
+		//expanded=true
+		//active_worker
+		//
+		//$tpl->display('file:' . dirname(__FILE__) . '/templates/display/message.tpl');
+		$tpl->display('file:' . $tpl_path . 'display/message.tpl');
+	}	
+	
+	
+	
+	function retrieveCommentAction() {
+		echo "hi";
 	}
 	
 	function showDisplayTicket() {
