@@ -1,36 +1,63 @@
 {include file="$path/top_nav.tpl"}
 <div id="toolbar">
 	<div id="tb_display" class="tb">
+		<a href="javascript:none();" id="tb_btn_back_display2"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/arrow_left_green.png{/devblocks_url}" align="top"></a>		
+			{assign var="tb_closed_class" value=""}
+			{assign var="tb_spam_class" value=""}
+			{assign var="tb_deleted_class" value=""}
+			{assign var="tb_take_class" value=""}			
 
-			{if !$ticket->is_deleted}
-				{if $ticket->is_closed}
-					<a href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/folder_out.png{/devblocks_url}" align="top"></a>
-				{else}
-					{if $active_worker->hasPriv('core.ticket.actions.close')}<a title="{$translate->_('display.shortcut.close')}" href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/folder_ok.png{/devblocks_url}" align="top"></a>{/if}
+			{if $ticket->is_deleted } 
+				{assign var="tb_closed_class" value=" tb_link_grayed"}
+				{assign var="tb_spam_class" value=" tb_link_grayed"}
+				{assign var="tb_deleted_class" value=" tb_link_grayed"}
+				
+			{else}
+
+				{if !$ticket->is_closed AND !$active_worker->hasPriv('core.ticket.actions.close')}
+					{assign var="tb_closed_class" value=" tb_link_grayed"}
+				{/if}
+				{if !$active_worker->hasPriv('core.ticket.actions.delete')}
+					{assign var="tb_deleted_class" value=" tb_link_grayed"}
 				{/if}
 				
-				{if empty($ticket->spam_training)}
-					{if $active_worker->hasPriv('core.ticket.actions.spam')}<a title="{$translate->_('display.shortcut.spam')}" href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/spam.png{/devblocks_url}" align="top"></a>{/if}
+				{if !empty($ticket->spam_training) OR !$active_worker->hasPriv('core.ticket.actions.spam')}
+					{assign var="tb_spam_class" value=" tb_link_grayed"}
 				{/if}
+				
+			{/if}
+			
+			{if !empty($ticket->next_worker_id) AND $ticket->next_worker_id != $active_worker->id}
+				{assign var="tb_take_class" value=" tb_link_grayed"}
 			{/if}
 
-			{if $ticket->is_deleted}
-				<a href="javascript:none();"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/delete_gray.gif{/devblocks_url}" align="top"></a>
+			{if $ticket->is_closed}
+				<a href="javascript:none();" id="tb_btn_reopen" class="tb_prop_link{$tb_closed_class}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/folder_out.png{/devblocks_url}" align="top"></a>
 			{else}
-				{if $active_worker->hasPriv('core.ticket.actions.delete')}<a href="javascript:none();" title="{$translate->_('display.shortcut.delete')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/delete.png{/devblocks_url}" align="top"></a>{/if}
+				<a href="javascript:none();" id="tb_btn_close" class="tb_prop_link{$tb_closed_class}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/folder_ok.png{/devblocks_url}" align="top"></a>
 			{/if}
-		
-		
-			{if empty($ticket->next_worker_id)}<a href="javascript:none();" title="{$translate->_('display.shortcut.take')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/hand_paper.png{/devblocks_url}" align="top"></a>{/if}
-			{if $ticket->next_worker_id == $active_worker->id}<a href="javascript:none();" title="{$translate->_('display.shortcut.surrender')}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/flag_yellow.png{/devblocks_url}" align="top"></a>{/if}
 			
-			{*
-			<a href="javascript:none();" onclick="replyButton(event);"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/export2.png{/devblocks_url}" align="top"></a>
-			*}
+			<a href="javascript:none();" id="tb_btn_spam" class="tb_prop_link{$tb_spam_class}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/spam.png{/devblocks_url}" align="top"></a>
+
+			<a href="javascript:none();" id="tb_btn_delete" class="tb_prop_link{$tb_deleted_class}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/delete.png{/devblocks_url}" align="top"></a>
+		
+			{if $ticket->next_worker_id == $active_worker->id}
+				<a href="javascript:none();" id="tb_btn_release" class="tb_prop_link{$tb_take_class}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/flag_yellow.png{/devblocks_url}" align="top"></a>
+			{else}
+				<a href="javascript:none();" id="tb_btn_take" class="tb_prop_link{$tb_take_class}"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/hand_paper.png{/devblocks_url}" align="top"></a>
+			{/if}
+			
 	</div>
+
+	<div id="tb_display_right" class="tb tb_right">
+		<a href="javascript:none();" id="tb_btn_back_display"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/export2.png{/devblocks_url}" align="top"></a>		
+	</div>
+
+
 	<div id="tb_reply" class="tb">
 		<a href="javascript:none();" id="tb_btn_back_display"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/arrow_left_green.png{/devblocks_url}" align="top"></a>		
 	</div>
+	
 </div>
 
 
@@ -93,7 +120,7 @@
 	<table border="0" cellspacing="0" cellpadding="0">
 		<tr>
 			<td class="label">Status:</td>
-			<td colspan="4">{if $ticket->is_deleted}{$translate->_('status.deleted')}{elseif $ticket->is_closed}{$translate->_('status.closed')}{elseif $ticket->is_waiting}{$translate->_('status.waiting')}{else}{$translate->_('status.open')}{/if}</td>
+			<td colspan="4" id="dispropStatus">{if $ticket->is_deleted}{$translate->_('status.deleted')}{elseif $ticket->is_closed}{$translate->_('status.closed')}{elseif $ticket->is_waiting}{$translate->_('status.waiting')}{else}{$translate->_('status.open')}{/if}</td>
 		</tr>
 		<tr>
 			<td class="label">Group:</td>
@@ -119,6 +146,7 @@
 		
 	</table>
 	<div class="dval nextWorkerId">{$ticket->next_worker_id}</div>
+	<div class="dval ticketIdDval">{$ticket->id}</div>
 </div>
 
 <div id="conversation">

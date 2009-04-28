@@ -2,6 +2,17 @@
 function none() {};
 
 $(document).ready(function(){
+	var displayToolLinks = $('#toolbar #tb_display a.tb_prop_link');
+	var displayToolGrayedLinks = displayToolLinks.filter('.tb_link_grayed');
+
+	//link non disabled ticket property toolbar buttons
+	displayToolLinks.filter(":not(.tb_link_grayed)").click(function(event) {updateTicket(event) });
+	
+	//the delete button is the only one that still works when grayed
+	displayToolGrayedLinks.filter('[id!=tb_btn_delete]').removeAttr("href");
+	$('#tb_btn_delete.tb_link_grayed').click(function(event) {updateTicket(event)});
+	
+	
 	$('#toolbar #tb_reply #tb_btn_back_display').click(function(event) {	showDisplay(event); });
 	
 	$('#conversation div.convo_block_container').click(function(event) {
@@ -28,7 +39,7 @@ function doConvoBlockToggle(container) {
 	var convo_block_content = $("div.convo_block_content", convo_block_pane);
 	
 	$("ul.convo_block_headers li.extra_header", container).slideToggle();
-	console.log(convo_block_content.html());
+	//console.log(convo_block_content.html());
 	if(convo_block_content.html().trim().length > 0) {
 		convo_block_pane.slideToggle();
 		container.toggleClass("convo_block_expanded");
@@ -161,6 +172,17 @@ function showDisplay(event){
 		
 }
 
+function bindMessageHandlers() {
+	var firstBlock = $('#conversation div.convo_block_container:first-child');
+	firstBlock.click(function(event) {
+		event.preventDefault();
+		doConvoBlockToggle($(this));
+	});
+	
+	firstBlock.find("ul.message_buttons li button").click(function(event) { replyButton(event)});
+
+}
+
 function sendReply() {
 	var replyPane = $("#reply_pane");
 	var isForward = $("#reply_pane_title").text()=="Forward";
@@ -173,7 +195,7 @@ function sendReply() {
 		}
 	}
 	
-	ajaxParams = {
+	var ajaxParams = {
 		c: "iphone",
 		a: "display",
 		a2: "sendReply",
@@ -196,7 +218,7 @@ function sendReply() {
 			function(xml) {
 				$("#display #conversation").prepend(xml).find("div.convo_block_container:first-child").fadeIn("slow" ,function() {
 					doConvoBlockToggle($(this));
-					//doMessageBinds();
+					bindMessageHandlers();
 				});
 			}, "html");
 			
@@ -204,5 +226,115 @@ function sendReply() {
 
 }
 
+function updateTicket(event) {
+	var img = $(event.target);
+	var link = img.parent();
+	//alert(event.target);
+
+	var linkId = link.attr("id");
+	
+	var ticketId = $("#properties div.ticketIdDval").text();
+
+	var ajaxParams = {
+			c: "iphone",
+			a: "display",
+			a2: "updateProperties",
+			id: ticketId};
+
+	var imgPath = DevblocksAppPath+"resource/cerberusweb.iphone/images/24x24/";
+
+	switch(linkId) {
+		case "tb_btn_reopen":
+			ajaxParams['closed'] = "0";
+			//change closed to folder_ok
+			img.attr("src", imgPath+"folder_ok.png");
+			link.attr("id", "tb_btn_close");
+			$("#properties #dispropStatus").text("Open");
+		break;
+		case "tb_btn_close":
+			ajaxParams['closed'] = "1";
+			//change closed to folder_out
+			img.attr("src", imgPath+"folder_out.png");
+			link.attr("id", "tb_btn_reopen");
+			$("#properties #dispropStatus").text("Closed");
+		break;		
+		case "tb_btn_spam":
+			ajaxParams['spam'] = "1";
+			//add tb_link_grayed
+			doDeletedToolbarState();
+		break;
+		case "tb_btn_delete":
+			if(link.hasClass("tb_link_grayed")) {
+				ajaxParams['deleted'] = "0";
+				//remove spam tb_link_grayed
+				//change closed to folder_ok & remove tb_link_grayed
+				//remove delete tb_link_grayed
+				var spamLink = $("#tb_btn_spam");
+				spamLink.removeClass("tb_link_grayed");
+				spamLink.attr("href", "javascript:none();");
+				spamLink.click(function(event) { updateTicket(event)});
+				
+				var closedLink = $("#tb_btn_close");
+				if (closedLink.attr('id') == null) {
+					closedLink = $("#tb_btn_reopen");
+					closedLink.children("img").attr('src', imgPath+"folder_ok.png");
+					closedLink.attr("id", 'tb_btn_close');
+				}
+				closedLink.attr('href', 'javascript:none();');
+				closedLink.removeClass('tb_link_grayed');
+				closedLink.click(function(event) {updateTicket(event)});
+				$("#properties #dispropStatus").text("Open");
+
+				link.removeClass("tb_link_grayed");
+			}
+			else {
+				ajaxParams['deleted'] = "1";
+				//add spam tb_link_grayed
+				//add closed tb_link_grayed
+				//add delete tb_link_grayed
+				doDeletedToolbarState();
+			}
+		break;
+		case "tb_btn_release":
+			ajaxParams['next_worker_id'] = "0";
+			//change image to hand
+			img.attr('src', imgPath + "hand_paper.png");
+			link.attr('id', 'tb_btn_take');
+		break;
+		case "tb_btn_take":
+			ajaxParams['next_worker_id'] = activeWorkerId;
+			//change image to flag
+			img.attr('src', imgPath + "flag_yellow.png");
+			link.attr('id', 'tb_btn_release');
+		break;
+		
+	}
+	
+	$.post(DevblocksAppPath + "ajax.php", 
+			ajaxParams, 
+			function(xml) {}, "html");
+	
+	
+}
+
+function doDeletedToolbarState() {
+	var spamLink = $("#tb_btn_spam");
+	spamLink.addClass('tb_link_grayed');
+	spamLink.removeAttr('href');
+	spamLink.unbind('click');
+	
+	var closedLink = $("#tb_btn_close");
+	if(closedLink.attr('id')==null) {
+		closedLink = $("#tb_btn_reopen");
+	}
+	closedLink.removeAttr("href");
+	closedLink.addClass("tb_link_grayed");
+	closedLink.unbind('click');
+	
+	var deletedLink = $("#tb_btn_delete");
+	deletedLink.addClass('tb_link_grayed');	
+	
+	$("#properties #dispropStatus").text("Deleted");
+}
 
 

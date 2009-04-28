@@ -25,7 +25,7 @@
       
       <div class="convo_block_pane" >
       	
-			<div class="convo_block_content">{if $expanded or $fetch_content}{$message->getContent()|trim|escape|nl2br}{/if}</div>
+			<div class="convo_block_content">{if $expanded or $fetch_content}{$message->getContent()|trim|escape|makehrefs|nl2br}{/if}</div>
 	      	<ul class="message_buttons">
 		      	{if $active_worker->hasPriv('core.display.actions.reply')}<li><button  type="button" class="btnReply"> <img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/export2.png{/devblocks_url}" align="top"><br/>{$translate->_('display.ui.reply')|capitalize}</button></li>{/if}
 		      	{if $active_worker->hasPriv('core.display.actions.forward')}<li><button type="button" class="btnForward"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/document_out.png{/devblocks_url}" align="top"> <br/>{$translate->_('display.ui.forward')|capitalize}</button></li>{/if}

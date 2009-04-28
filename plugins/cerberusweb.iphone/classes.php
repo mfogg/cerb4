@@ -596,6 +596,62 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$tpl->display('file:' . $tpl_path . 'display/message.tpl');
 	}	
 	
+	function updatePropertiesAction() {
+		@$id = DevblocksPlatform::importGPC($_REQUEST['id']); // ticket id
+		@$closed = DevblocksPlatform::importGPC($_REQUEST['closed'],'integer',0);
+		@$spam = DevblocksPlatform::importGPC($_REQUEST['spam'],'integer',0);
+		@$deleted = DevblocksPlatform::importGPC($_REQUEST['deleted'],'integer',0);
+		@$bucket = DevblocksPlatform::importGPC($_REQUEST['bucket_id'],'string');
+		@$next_worker_id = DevblocksPlatform::importGPC($_REQUEST['next_worker_id'],'integer',-1);
+		@$unlock_date = DevblocksPlatform::importGPC($_REQUEST['unlock_date'],'integer',1);
+		
+		@$ticket = DAO_Ticket::getTicket($id);
+		
+		// Anti-Spam
+		if(!empty($spam)) {
+		    CerberusBayes::markTicketAsSpam($id);
+		    // [mdf] if the spam button was clicked override the default params for deleted/closed
+		    $closed=1;
+		    $deleted=1;
+		}
+
+		$categories = DAO_Bucket::getAll();
+
+		// Properties
+		$properties = array(
+			DAO_Ticket::IS_CLOSED => intval($closed),
+			DAO_Ticket::IS_DELETED => intval($deleted),
+		);
+
+		// Undeleting?
+		if(empty($spam) && empty($closed) && empty($deleted) 
+			&& $ticket->spam_training == CerberusTicketSpamTraining::SPAM && $ticket->is_closed) {
+				$score = CerberusBayes::calculateTicketSpamProbability($id);
+				$properties[DAO_Ticket::SPAM_SCORE] = $score['probability']; 
+				$properties[DAO_Ticket::SPAM_TRAINING] = CerberusTicketSpamTraining::BLANK;
+		}
+		
+		// Team/Category
+		if(!empty($bucket)) {
+			list($team_id,$bucket_id) = CerberusApplication::translateTeamCategoryCode($bucket);
+
+			if(!empty($team_id)) {
+			    $properties[DAO_Ticket::TEAM_ID] = $team_id;
+			    $properties[DAO_Ticket::CATEGORY_ID] = $bucket_id;
+			}
+		}
+		
+		if($next_worker_id != -1 && $next_worker_id != $ticket->next_worker_id) {
+			$properties[DAO_Ticket::NEXT_WORKER_ID] = $next_worker_id;
+		}
+		
+		// Reset the unlock date (next worker "until")
+		$properties[DAO_Ticket::UNLOCK_DATE] = $unlock_date;
+		//echo "<pre>";print_r($properties);echo "</pre>";
+		DAO_Ticket::updateTicket($id, $properties);
+
+	}	
+	
 	
 	
 	function retrieveCommentAction() {

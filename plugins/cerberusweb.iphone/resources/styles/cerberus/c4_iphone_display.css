@@ -107,12 +107,24 @@ div#toolbar div.tb {
 	margin-top:-12px;
 }
 
+div#toolbar div.tb a.tb_link_grayed {
+    opacity : 0.3;
+    filter: alpha(opacity=30); 
+}
+
+
+div#toolbar div.tb_right {
+	right: 10px;
+}
+
+
+
 div#toolbar div#tb_reply {
 	display: none;
 }
 
-div#toolbar div#tb a {
-	margin-right: 10px;
+div#toolbar div.tb a {
+	margin-right: 14px;
 }
 
 
