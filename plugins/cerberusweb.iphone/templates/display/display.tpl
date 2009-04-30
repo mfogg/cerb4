@@ -1,4 +1,4 @@
-{include file="$path/top_nav.tpl"}
+{include file="$path/display/top_nav.tpl"}
 <div id="toolbar">
 	<div id="tb_display" class="tb">
 		<a href="javascript:none();" id="tb_btn_back_display2"><img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/24x24/arrow_left_green.png{/devblocks_url}" align="top"></a>		
@@ -180,4 +180,8 @@
 
 <div id="reply">
 	{include file="$path/display/reply.tpl"}
+</div>
+
+<div id="properties_tab">
+	{include file="$path/display/properties.tpl"}
 </div>

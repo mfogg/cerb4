@@ -478,6 +478,17 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$workers = DAO_Worker::getAll();
 		$tpl->assign('workers', $workers);
 		
+		$teams = DAO_Group::getAll();
+		$tpl->assign('teams', $teams);
+
+//		$buckets = DAO_Bucket::getAll();
+//		$tpl->assign('buckets', $buckets);
+
+		$team_categories = DAO_Bucket::getTeams();
+		$tpl->assign('team_categories', $team_categories);		
+		
+		
+		
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
 		
 		
@@ -652,6 +663,140 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 
 	}	
 	
+
+	function savePropertiesAction() {
+		@$ticket_id = DevblocksPlatform::importGPC($_POST['ticket_id'],'integer',0);
+		@$remove = DevblocksPlatform::importGPC($_POST['remove'],'array',array());
+		@$next_worker_id = DevblocksPlatform::importGPC($_POST['next_worker_id'],'integer',0);
+		@$ticket_reopen = DevblocksPlatform::importGPC($_POST['ticket_reopen'],'string','');
+		@$unlock_date = DevblocksPlatform::importGPC($_POST['unlock_date'],'string','');
+		@$subject = DevblocksPlatform::importGPC($_POST['subject'],'string','');
+		@$closed = DevblocksPlatform::importGPC($_POST['closed'],'closed',0);
+		@$bucket = DevblocksPlatform::importGPC($_REQUEST['bucket_id'],'string','');
+		@$spam_training = DevblocksPlatform::importGPC($_REQUEST['spam_training'],'string','');
+		
+		@$ticket = DAO_Ticket::getTicket($ticket_id);
+		
+		if(empty($ticket_id) || empty($ticket))
+			return;
+		
+		$fields = array();
+		
+		// Properties
+
+		if(empty($next_worker_id))
+			$unlock_date = "";
+		
+		// Status
+		if(isset($closed)) {
+			switch($closed) {
+				case 0: // open
+					$fields[DAO_Ticket::IS_WAITING] = 0;
+					$fields[DAO_Ticket::IS_CLOSED] = 0;
+					$fields[DAO_Ticket::IS_DELETED] = 0;
+					$fields[DAO_Ticket::DUE_DATE] = 0;
+					break;
+				case 1: // closed
+					$fields[DAO_Ticket::IS_WAITING] = 0;
+					$fields[DAO_Ticket::IS_CLOSED] = 1;
+					$fields[DAO_Ticket::IS_DELETED] = 0;
+					
+					if(isset($ticket_reopen)) {
+						@$time = intval(strtotime($ticket_reopen));
+						$fields[DAO_Ticket::DUE_DATE] = $time;
+					}
+					break;
+				case 2: // waiting
+					$fields[DAO_Ticket::IS_WAITING] = 1;
+					$fields[DAO_Ticket::IS_CLOSED] = 0;
+					$fields[DAO_Ticket::IS_DELETED] = 0;
+					
+					if(isset($ticket_reopen)) {
+						@$time = intval(strtotime($ticket_reopen));
+						$fields[DAO_Ticket::DUE_DATE] = $time;
+					}
+					break;
+				case 3: // deleted
+					$fields[DAO_Ticket::IS_WAITING] = 0;
+					$fields[DAO_Ticket::IS_CLOSED] = 1;
+					$fields[DAO_Ticket::IS_DELETED] = 1;
+					$fields[DAO_Ticket::DUE_DATE] = 0;
+					break;
+			}
+		}
+			
+		if(isset($next_worker_id))
+			$fields[DAO_Ticket::NEXT_WORKER_ID] = $next_worker_id;
+			
+		if(isset($unlock_date)) {
+			@$time = intval(strtotime($unlock_date));
+			$fields[DAO_Ticket::UNLOCK_DATE] = $time;
+		}
+
+		if(!empty($subject))
+			$fields[DAO_Ticket::SUBJECT] = $subject;
+
+		// Team/Category
+		if(!empty($bucket)) {
+			list($team_id,$bucket_id) = CerberusApplication::translateTeamCategoryCode($bucket);
+
+			if(!empty($team_id)) {
+			    $fields[DAO_Ticket::TEAM_ID] = $team_id;
+			    $fields[DAO_Ticket::CATEGORY_ID] = $bucket_id;
+			}
+		}
+		
+		// Spam Training
+		if(!empty($spam_training)) {
+			if('S'==$spam_training)
+				CerberusBayes::markTicketAsSpam($id);
+			elseif('N'==$spam_training)
+				CerberusBayes::markTicketAsNotSpam($id);
+		}
+
+		if(!empty($fields)) {
+			//print_r($fields);
+			DAO_Ticket::updateTicket($ticket_id, $fields);
+		}
+
+		// Custom field saves
+		@$field_ids = DevblocksPlatform::importGPC($_POST['field_ids'], 'array', array());
+		DAO_CustomFieldValue::handleFormPost(ChCustomFieldSource_Ticket::ID, $ticket_id, $field_ids);
+		
+		// Requesters
+		@$req_list = DevblocksPlatform::importGPC($_POST['add'],'string','');
+		if(!empty($req_list)) {
+			$req_list = DevblocksPlatform::parseCrlfString($req_list);
+			$req_list = array_unique($req_list);
+			
+			// [TODO] This is redundant with the Requester Peek on Reply
+			if(is_array($req_list) && !empty($req_list)) {
+				foreach($req_list as $req) {
+					if(empty($req))
+						continue;
+						
+					$rfc_addys = imap_rfc822_parse_adrlist($req, 'localhost');
+					
+					foreach($rfc_addys as $rfc_addy) {
+						$addy = $rfc_addy->mailbox . '@' . $rfc_addy->host;
+						
+						if(null != ($req_addy = CerberusApplication::hashLookupAddress($addy, true)))
+							DAO_Ticket::createRequester($req_addy->id, $ticket_id);
+					}
+				}
+			}
+		}
+		
+		if(!empty($remove) && is_array($remove)) {
+			foreach($remove as $address_id) {
+				$addy = DAO_Address::get($address_id);
+				DAO_Ticket::deleteRequester($ticket_id, $address_id);
+//				echo "Removed <b>" . $addy->email . "</b> as a recipient.<br>";
+			}
+		}
+		
+	}
+
 	
 	
 	function retrieveCommentAction() {

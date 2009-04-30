@@ -31,6 +31,10 @@ button {
 	font-size: 16px;
 }
 
+input {
+  -webkit-text-size-adjust: 140%;
+}
+
 .dval {
 	display: none;
 }
@@ -336,4 +340,27 @@ div#reply_pane div#reply_buttons {
 }
 div#reply_pane div#reply_buttons button {
 	width: 110px;
+}
+
+#properties_container {
+	display: none;
+}
+
+#properties_container > div > div {
+	margin: 14px 5px 14px 5px;
+}
+
+#properties_container h3 {
+	/* line-height: 5px; */
+	font-size: 14px;
+	display: inline;
+}
+
+#properties_container ul {
+	list-style-type: none; 
+}
+
+
+#properties_container input[type=text] {
+	width: 100%;
 }

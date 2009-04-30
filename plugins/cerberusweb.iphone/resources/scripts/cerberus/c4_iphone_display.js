@@ -1,7 +1,11 @@
 
+var currentContent = "display";
+
 function none() {};
 
 $(document).ready(function(){
+	$('#top_tabs li a').click(function(event) {tabClick(event.target)});
+	
 	var displayToolLinks = $('#toolbar #tb_display a.tb_prop_link');
 	var displayToolGrayedLinks = displayToolLinks.filter('.tb_link_grayed');
 
@@ -27,7 +31,53 @@ $(document).ready(function(){
 	$('div#reply_pane select[name=next_worker]').change(function(event) { nextWorkerChanged();});
 	$('#reply_pane #send_button').click(function(event) { sendReply(); });
 	$('#reply_pane #discard_reply').click(function(event) { showDisplay()});
+	
+	var propContainer = $('#properties_container');
+	propContainer.find('#properties_me_button').click(function(event) {propertiesMePressed(event)});
+	propContainer.find('#properties_anybody_button').click(function(event) { propertiesAnyPressed(event);});	
+	propContainer.find('input[name=status]').change(function(event) { propertiesToggleResumeDiv()});		
+	propContainer.find('select[name=next_worker]').change(function(event) { propertiesNextWorkerChanged();});	
+	propContainer.find('#save_properties_button').click(function(event) { propertiesSave();});	
+	propertiesToggleResumeDiv();
 });
+
+
+function tabClick(tabLink) {
+	tabClick(tabLink, null);
+}
+
+function tabClick(tabLink, contentDivName) {
+	var tabMap = [];
+	tabMap['Conv'] = {key: "Convo", contentId: "display", toolbar: "tb_display"};
+	tabMap['Props'] = {key: "Props",contentId: "properties_container",toolbar: null};
+	
+	var tabObj = $(tabLink).parent();
+	console.log($(tabLink).text());
+	var tabName = $(tabLink).text();
+	
+	var toolbarObj = $("#" + tabMap[tabName].toolbar);
+	
+	if(contentDivName != null) {
+		contentObj = $("#"+contentDivName);
+	}
+	else {
+		contentObj = $("#" + tabMap[tabName].contentId);
+		contentDivName = tabMap[tabName].contentId;
+	}
+	
+	//update tabs
+	$("#top_tabs li.top_tabs_selected").removeClass('top_tabs_selected');
+	tabObj.addClass('top_tabs_selected');
+	
+	//update toolbar
+	$("#toolbar div").hide();
+	toolbarObj.show();
+
+//	//update content
+	$("#"+currentContent).hide();
+	contentObj.show();
+	currentContent = contentDivName;
+}
 
 function doConvoBlockToggle(container) {
 	if(!container.hasClass("convo_block_container")) {
@@ -337,4 +387,71 @@ function doDeletedToolbarState() {
 	$("#properties #dispropStatus").text("Deleted");
 }
 
+function propertiesAnyPressed(event) {
+	$('#properties_container select[name=next_worker]').val("0");
+	propertiesNextWorkerChanged();
+}
+function propertiesMePressed(event) {
+	$('#properties_container select[name=next_worker]').val(activeWorkerId);
+	propertiesNextWorkerChanged();
+}
 
+function propertiesNextWorkerChanged() {
+	var isNextWorkerUnset = (parseInt($('#properties_container select[name=next_worker]').val()) == 0);
+	if(isNextWorkerUnset) {
+		$("#properties_container div.properties_surrender").fadeOut();
+	}
+	else {
+		$("#properties_container div.properties_surrender").fadeIn();
+	}
+}
+
+function propertiesToggleResumeDiv() {
+	var container = $('#properties_container');
+	var statusVal = container.find("input[name=status]:checked").val();
+	console.log(statusVal);
+	
+	if(container.css("display") == "block") {
+		var opacity = (statusVal==1 || statusVal == 2) ? "show" : "hide";
+		container.find("div.properties_resume").animate({opacity: opacity});
+	}
+	else {
+		//this case is used when this function is called in initialization (since the container starts hidden)
+		container.find("div.properties_resume").toggle(statusVal==1 || statusVal==2);
+	}
+	
+}
+
+function propertiesSave() {
+	var ticketId = $("#properties div.ticketIdDval").text();
+	
+	var propertiesContainer = $("#properties_container");
+	
+	var statusVal = propertiesContainer.find("input[name=status]:checked").val();
+	var nextWorkerId = propertiesContainer.find("select[name=next_worker]").val();
+	var subject = propertiesContainer.find("input[name=subject]").val();
+	var ticketReopen = propertiesContainer.find("input[name=ticket_reopen]").val();
+	var unlockDate = propertiesContainer.find("input[name=unlock_date]").val();
+	var spamTraining = propertiesContainer.find("input[name=spam_training]:checked").val();
+	var bucketId = propertiesContainer.find("select[name=bucket_id]").val();
+	
+	var ajaxParams = {
+		c: "iphone",
+		a: "display",
+		a2: "saveProperties",
+		ticket_id: ticketId,
+		next_worker_id: nextWorkerId,
+		ticket_reopen: ticketReopen,
+		unlock_date: unlockDate,
+		subject: subject,
+		closed: statusVal,
+		spam_training: spamTraining,
+		bucket_id: bucketId
+		};
+		
+	console.log(ajaxParams);
+
+	$.post(DevblocksAppPath + "ajax.php", 
+			ajaxParams, 
+			function(xml) {}, "html");
+}

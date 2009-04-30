@@ -96,11 +96,11 @@
 				<td>Open</td>
 			</tr>
 			<tr>
-				<td><input type="radio" name="status" value="1" checked/></td>
+				<td><input type="radio" name="status" value="2" checked/></td>
 				<td>Waiting</td>
 			</tr>
 			<tr>
-				<td><input type="radio" name="status" value="2"/></td>
+				<td><input type="radio" name="status" value="1"/></td>
 				<td>Closed</td>
 			</tr>
 		</table>
