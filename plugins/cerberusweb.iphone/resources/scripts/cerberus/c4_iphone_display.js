@@ -434,6 +434,8 @@ function propertiesSave() {
 	var unlockDate = propertiesContainer.find("input[name=unlock_date]").val();
 	var spamTraining = propertiesContainer.find("input[name=spam_training]:checked").val();
 	var bucketId = propertiesContainer.find("select[name=bucket_id]").val();
+	var customFieldIds = propertiesContainer.find("input[name=custom_field_id_str]").val();
+	
 	
 	var ajaxParams = {
 		c: "iphone",
@@ -446,9 +448,58 @@ function propertiesSave() {
 		subject: subject,
 		closed: statusVal,
 		spam_training: spamTraining,
-		bucket_id: bucketId
-		};
+		bucket_id: bucketId,
+		custom_field_id_str: customFieldIds
+	};
 		
+	var customFields = customFieldIds.split(",");
+	for(var a in customFields) {
+		var postKey = "field_"+customFields[a];
+		var fieldObj = propertiesContainer.find("[name="+postKey+"]");
+		
+		var tag = fieldObj.get(0).tagName;
+		switch(tag) {
+			case "INPUT":
+				switch(fieldObj.attr("type")) {
+					case "text":
+						ajaxParams[postKey] = fieldObj.val();
+					break;
+					case "radio":
+						ajaxParams[postKey] = fieldObj.find(":checked").val();
+					break;
+					case "checkbox":
+						if(fieldObj.length == 1) {
+							//single checkbox
+							ajaxParams[postKey] = fieldObj.filter(":checked").val();
+						} 
+						else {
+							//multi-checkbox
+							var multiVals = [];
+							fieldObj.filter(":checked").each(function() {
+								multiVals.push($(this).val());
+							});
+							console.log("multiVals="+multiVals);
+							ajaxParams[postKey] = multiVals.join("|||");
+						}
+					break;
+				}
+			break;
+			
+			case "SELECT":
+				var arraySuffix = "";
+				if(fieldObj.attr("multiple")) {
+					arraySuffix = '[]';
+				}
+				ajaxParams[postKey+arraySuffix] = fieldObj.val();
+			break;			
+			case "textarea":
+				ajaxParams[postKey] = fieldObj.val();
+			break;
+		}
+		
+	}
+
+
 	console.log(ajaxParams);
 
 	$.post(DevblocksAppPath + "ajax.php", 

@@ -486,7 +486,27 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 
 		$team_categories = DAO_Bucket::getTeams();
 		$tpl->assign('team_categories', $team_categories);		
+
+		// Custom fields
+		$custom_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
+		$tpl->assign('custom_fields', $custom_fields);
 		
+		$custom_field_values = DAO_CustomFieldValue::getValuesBySourceIds(ChCustomFieldSource_Ticket::ID, $ticket->id);
+		if(isset($custom_field_values[$ticket->id]))
+			$tpl->assign('custom_field_values', $custom_field_values[$ticket->id]);
+		
+		$field_id_str = "";
+		$first_cf_loop = true;
+		foreach($custom_fields as $cf_key=>$cf_val) {
+			if(!$first_cf_loop) {
+				$field_id_str .= ",";
+			}
+			else {
+				$first_cf_loop = false;
+			}
+			$field_id_str .= $cf_key;
+		}
+		$tpl->assign('custom_field_id_str', $field_id_str);
 		
 		
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
@@ -674,8 +694,11 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		@$closed = DevblocksPlatform::importGPC($_POST['closed'],'closed',0);
 		@$bucket = DevblocksPlatform::importGPC($_REQUEST['bucket_id'],'string','');
 		@$spam_training = DevblocksPlatform::importGPC($_REQUEST['spam_training'],'string','');
+		$field_ids = explode(",", DevblocksPlatform::importGPC($_POST['custom_field_id_str'], 'string', ''));
 		
 		@$ticket = DAO_Ticket::getTicket($ticket_id);
+		
+
 		
 		if(empty($ticket_id) || empty($ticket))
 			return;
@@ -760,8 +783,28 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		}
 
 		// Custom field saves
-		@$field_ids = DevblocksPlatform::importGPC($_POST['field_ids'], 'array', array());
-		DAO_CustomFieldValue::handleFormPost(ChCustomFieldSource_Ticket::ID, $ticket_id, $field_ids);
+		//@$field_ids = DevblocksPlatform::importGPC($_POST['field_ids'], 'array', array());
+		$simulatedPost = array();
+		foreach($field_ids as $field_id) {
+			$current_field = $_POST['field_' . $field_id];
+			if(is_array($current_field)) {
+				$postedCustomVal = DevblocksPlatform::importGPC($current_field,'array','array()');
+				$simulatedPost['field_' . $field_id] = $postedCustomVal;
+			}
+			else {
+				$postedCustomVal = DevblocksPlatform::importGPC($current_field,'string','');
+				//multi-checkboxes post with ||| delimited text values
+				if(strpos($postedCustomVal, "|||") !== false) {
+					$valsArray = explode("|||", $postedCustomVal);
+					$simulatedPost['field_' . $field_id] = $valsArray;
+				}
+				else {
+					$simulatedPost['field_' . $field_id] = $postedCustomVal;
+				}
+			}
+		}
+		//print_r($simulatedPost);return;
+		DAO_CustomFieldValue::handleFormPost(ChCustomFieldSource_Ticket::ID, $ticket_id, $field_ids, $simulatedPost);
 		
 		// Requesters
 		@$req_list = DevblocksPlatform::importGPC($_POST['add'],'string','');

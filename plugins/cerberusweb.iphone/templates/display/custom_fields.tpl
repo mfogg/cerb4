@@ -1,4 +1,5 @@
 <table cellpadding="2" cellspacing="1" border="0">
+<input type="hidden" name="custom_field_id_str" value="{$custom_field_id_str}">
 {assign var=last_group_id value=-1}
 {foreach from=$custom_fields item=f key=f_id}
 {assign var=field_group_id value=$f->group_id}
@@ -11,7 +12,6 @@
 	{/if}
 		<tr>
 			<td valign="top" width="1%" align="right" nowrap="nowrap">
-				<input type="hidden" name="field_ids[]" value="{$f_id}">
 				{$f->name}:
 			</td>
 			<td valign="top" width="99%">
@@ -28,7 +28,7 @@
 					<input type="checkbox" name="field_{$f_id}" value="1" {if $custom_field_values.$f_id}checked{/if}><br>
 				{elseif $f->type=='X'}
 					{foreach from=$f->options item=opt}
-					<label><input type="checkbox" name="field_{$f_id}[]" value="{$opt|escape}" {if isset($custom_field_values.$f_id.$opt)}checked="checked"{/if}> {$opt}</label><br>
+					<label><input type="checkbox" name="field_{$f_id}" value="{$opt|escape}" {if isset($custom_field_values.$f_id.$opt)}checked="checked"{/if}> {$opt}</label><br>
 					{/foreach}
 				{elseif $f->type=='D'}
 					<select name="field_{$f_id}">{* [TODO] Fix selected *}
@@ -38,7 +38,7 @@
 						{/foreach}
 					</select><br>
 				{elseif $f->type=='M'}
-					<select name="field_{$f_id}[]" size="5" multiple="multiple">
+					<select name="field_{$f_id}" size="5" multiple="multiple">
 						{foreach from=$f->options item=opt}
 						<option value="{$opt|escape}" {if isset($custom_field_values.$f_id.$opt)}selected="selected"{/if}>{$opt}</option>
 						{/foreach}

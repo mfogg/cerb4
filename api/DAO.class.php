@@ -6739,7 +6739,9 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 		return $do;
 	}
 	
-	public static function handleFormPost($source_ext_id, $source_id, $field_ids) {
+	public static function handleFormPost($source_ext_id, $source_id, $field_ids, $postObj=NULL) {
+		if($postObj === NULL)
+			$postObj = $_POST;
 		$fields = DAO_CustomField::getBySource($source_ext_id);
 		
 		if(is_array($field_ids))
@@ -6751,7 +6753,7 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 				case Model_CustomField::TYPE_MULTI_LINE:
 				case Model_CustomField::TYPE_SINGLE_LINE:
 				case Model_CustomField::TYPE_URL:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'string','');
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'string','');
 					if(0 != strlen($field_value)) {
 						DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, $field_value);
 					} else {
@@ -6760,7 +6762,7 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 					break;
 					
 				case Model_CustomField::TYPE_DROPDOWN:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'string','');
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'string','');
 					if(0 != strlen($field_value)) {
 						DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, $field_value);
 					} else {
@@ -6769,7 +6771,7 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 					break;
 					
 				case Model_CustomField::TYPE_MULTI_PICKLIST:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'array',array());
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'array',array());
 					if(!empty($field_value)) {
 						DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, $field_value);
 					} else {
@@ -6778,13 +6780,13 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 					break;
 					
 				case Model_CustomField::TYPE_CHECKBOX:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'integer',0);
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'integer',0);
 					$set = !empty($field_value) ? 1 : 0;
 					DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, $set);
 					break;
 
 				case Model_CustomField::TYPE_MULTI_CHECKBOX:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'array',array());
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'array',array());
 					if(!empty($field_value)) {
 						DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, $field_value);
 					} else {
@@ -6793,7 +6795,7 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 					break;
 				
 				case Model_CustomField::TYPE_DATE:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'string','');
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'string','');
 					@$date = strtotime($field_value);
 					if(!empty($date)) {
 						DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, $date);
@@ -6804,7 +6806,7 @@ class DAO_CustomFieldValue extends DevblocksORMHelper {
 
 				case Model_CustomField::TYPE_NUMBER:
 				case Model_CustomField::TYPE_WORKER:
-					@$field_value = DevblocksPlatform::importGPC($_POST['field_'.$field_id],'integer',0);
+					@$field_value = DevblocksPlatform::importGPC($postObj['field_'.$field_id],'integer',0);
 					if(0 != strlen($field_value)) {
 						DAO_CustomFieldValue::setFieldValue($source_ext_id, $source_id, $field_id, intval($field_value));
 					} else {

@@ -85,6 +85,9 @@
 		{/if}
 
 		
+{include file="$path/display/custom_fields.tpl"}
+		
+		
 		<div>
 			<button type="button" id="save_properties_button" name="save_properties_button">Save</button>
 		</div>
