@@ -2537,6 +2537,28 @@ class DAO_MessageHeader {
         
         return $headers;
     }
+	
+	static function getByTicketId($ticket_id) {
+        $db = DevblocksPlatform::getDatabaseService();
+        
+        $sql = "SELECT m.id message_id, h.header_name, h.header_value ".
+            "FROM message_header h ".
+			"INNER JOIN message m ON m.id = h.message_id ".
+            "WHERE m.ticket_id = ? " .
+			"ORDER BY m.ticket_id ";
+            
+        $rs = $db->Execute($sql, array($ticket_id))
+            or die(__CLASS__ . '('.__LINE__.')'. ':' . $db->ErrorMsg()); /* @var $rs ADORecordSet */
+
+        $headers = array();
+		
+        while(!$rs->EOF) {
+			$headers[$rs->fields['message_id']][$rs->fields['header_name']] = $rs->fields['header_value'];
+            $rs->MoveNext();
+        }
+        
+        return $headers;		
+	}
     
     static function getUnique() {
         $db = DevblocksPlatform::getDatabaseService();

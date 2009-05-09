@@ -5,7 +5,7 @@
 
 	{* Column Data *}
 	{foreach from=$tickets item=result key=idx name=results}
-		<li class="view_list_item" onclick="window.location.href='/cerb4/iphone/display/{$result.t_mask}';">
+		<li class="view_list_item">
 				<b id="subject_{$result.t_id}_{$view->id}">
 				{if $result.t_is_closed}<strike>{/if}
 				{$result.t_subject|escape|truncate:37:"..."}

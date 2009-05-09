@@ -144,7 +144,7 @@ class IPhoneController extends DevblocksControllerExtension {
 
 		// Default page [TODO] This is supposed to come from framework.config.php
 		if(empty($controller)) 
-			$controller = 'home';
+			$controller = 'display';//'home';
 
 	    // [JAS]: Require us to always be logged in for Cerberus pages
 	    // [TODO] This should probably consult with the page itself for ::authenticated()
@@ -342,7 +342,7 @@ class ChIPhoneLoginPage  extends CerberusIPhonePageExtension  {
 
 			$session->setVisit($visit);
 			
-			$devblocks_response = new DevblocksHttpResponse(array('iphone','home'));
+			$devblocks_response = new DevblocksHttpResponse(array('iphone','display'));
 			
 		} else {
 			$devblocks_response = new DevblocksHttpResponse(array('iphone', 'login', 'login_failed'));
@@ -365,10 +365,62 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 	function drawResourceTags() {
 		$tpl = DevblocksPlatform::getTemplateService();
 
+		$cerb4JSGlobal = new stdClass;
+		
+		$cerb4JSGlobal->workers = DAO_Worker::getAll();
+		foreach($cerb4JSGlobal->workers AS $val) {
+			unset($val->pass);
+			unset($val->last_activity);
+			unset($val->last_activity_date);
+		}
+		
+		$cerb4JSGlobal->groups = DAO_Group::getAll();
+		foreach($cerb4JSGlobal->groups as $val) {
+			unset($val->count);
+			unset($val->signature);
+			unset($val->id);
+			unset($val->pos);
+		}
+
+		$cerb4JSGlobal->categories = DAO_Bucket::getTeams();
+		foreach($cerb4JSGlobal->categories as $val) {
+			foreach($val AS $val2) {
+				unset($val2->id);
+				unset($val2->pos);
+				unset($val2->team_id);
+			}
+		}
+		
+		
+		$json = json_encode($cerb4JSGlobal);
+		//echo $json;
+		$tpl->assign('jsglobal', $json);
+		//print_r($tpl);
+
+
 		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
 		$tpl->display('file:' . $tpl_path . 'display/display_head.tpl');
 	}
-	
+
+	function render() {
+		
+		// draws HTML form of controls needed for login information
+		$tpl = DevblocksPlatform::getTemplateService();
+		$tpl->cache_lifetime = "0";
+		
+		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
+		//$translate = DevblocksPlatform::getTranslationService();
+		//$tpl->assign('translate', $translate);
+		$tpl->assign('path', dirname(__FILE__). "/templates");
+		$tpl->assign('current_tab', "home");
+
+
+
+		$workspaces = DAO_WorkerWorkspaceList::getWorkspaces($active_worker->id);
+		$tpl->assign('workspaces', $workspaces);
+
+		$tpl->display('file:' . dirname(__FILE__) . '/templates/home/home.tpl');
+	}
 	
 	function getTimelineAndSenders($messages) {
 		// Thread comments and messages on the same level	
@@ -405,7 +457,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		);		
 	}
 	
-	function render() {
+	function showDisplayAction() {
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
 		
@@ -416,9 +468,11 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		
 		$web_path =  DevblocksEngine::getWebPath();
 		//echo $web_path;
-		$mask = substr(strrchr($web_path, "/"), 1);
-		$id = DAO_Ticket::getTicketIdByMask($mask);
 		
+		//$mask = substr(strrchr($web_path, "/"), 1);
+		//$id = DAO_Ticket::getTicketIdByMask($mask);
+		
+		$id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
 			
 		//@$id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
 		
@@ -429,9 +483,12 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 
 		$ticket = DAO_Ticket::getTicket($id);
 		$tpl->assign('ticket', $ticket);
-		$tpl->assign('requesters', $ticket->getRequesters());
+		//$tpl->assign('requesters', $ticket->getRequesters());
+		$requesters = $ticket->getRequesters();
 		
 		$messages = $ticket->getMessages();
+		
+		$message_headers = DAO_MessageHeader::getByTicketId($id);
 		
 		arsort($messages);
 				
@@ -469,50 +526,78 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		}
 		$tpl->assign('convo_timeline', $convo_timeline);
 		
+		//TODO this isn't working
+		$last_convo_block = $convo_timeline[count($convo_timeline)];
+		if($last_convo_block[0]=='m') {
+			$mid = $last_convo_block[1];
+			$messages[$mid]->content =  DAO_MessageContent::get($mid);
+		}
+		
+		
 //		// Message toolbar items
 //		$messageToolbarItems = DevblocksPlatform::getExtensions('cerberusweb.message.toolbaritem', true);
 //		if(!empty($messageToolbarItems))
 //			$tpl->assign('message_toolbaritems', $messageToolbarItems);
 		
-		// Workers
-		$workers = DAO_Worker::getAll();
-		$tpl->assign('workers', $workers);
-		
-		$teams = DAO_Group::getAll();
-		$tpl->assign('teams', $teams);
 
-//		$buckets = DAO_Bucket::getAll();
-//		$tpl->assign('buckets', $buckets);
+//all this moved to main page load for global js scope
+//		 Workers
+//		$workers = DAO_Worker::getAll();
+//		$tpl->assign('workers', $workers);
+//		
+//		$teams = DAO_Group::getAll();
+//		$tpl->assign('teams', $teams);
+//
+//		$team_categories = DAO_Bucket::getTeams();
+//		$tpl->assign('team_categories', $team_categories);		
 
-		$team_categories = DAO_Bucket::getTeams();
-		$tpl->assign('team_categories', $team_categories);		
 
-		// Custom fields
-		$custom_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
-		$tpl->assign('custom_fields', $custom_fields);
+
+//		// Custom fields
+//		$custom_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
+//		$tpl->assign('custom_fields', $custom_fields);
+//		
+//		$custom_field_values = DAO_CustomFieldValue::getValuesBySourceIds(ChCustomFieldSource_Ticket::ID, $ticket->id);
+//		if(isset($custom_field_values[$ticket->id]))
+//			$tpl->assign('custom_field_values', $custom_field_values[$ticket->id]);
+//		
+//		$field_id_str = "";
+//		$first_cf_loop = true;
+//		foreach($custom_fields as $cf_key=>$cf_val) {
+//			if(!$first_cf_loop) {
+//				$field_id_str .= ",";
+//			}
+//			else {
+//				$first_cf_loop = false;
+//			}
+//			$field_id_str .= $cf_key;
+//		}
+//		$tpl->assign('custom_field_id_str', $field_id_str);
 		
-		$custom_field_values = DAO_CustomFieldValue::getValuesBySourceIds(ChCustomFieldSource_Ticket::ID, $ticket->id);
-		if(isset($custom_field_values[$ticket->id]))
-			$tpl->assign('custom_field_values', $custom_field_values[$ticket->id]);
 		
-		$field_id_str = "";
-		$first_cf_loop = true;
-		foreach($custom_fields as $cf_key=>$cf_val) {
-			if(!$first_cf_loop) {
-				$field_id_str .= ",";
-			}
-			else {
-				$first_cf_loop = false;
-			}
-			$field_id_str .= $cf_key;
-		}
-		$tpl->assign('custom_field_id_str', $field_id_str);
 		
 		
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
+		$disp_obj = new stdClass;
+//		$disp_obj->ticket = new stdClass;
+
+		
+		$ticket->conversation = $convo_timeline;
+		$ticket->messages = $messages;
+		$ticket->message_senders = $message_senders;
+		$ticket->comments = $mail_inline_comments;
+		$ticket->headers = $message_headers;
+		$ticket->requesters = $requesters;
+		//print_r($ticket);
+		$disp_obj->ticket = $ticket;
+
+		
+		echo json_encode($disp_obj);
 		
 		
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/display/display.tpl');
+		
+		
+		//$tpl->display('file:' . dirname(__FILE__) . '/templates/display/display.tpl');
 		
 	}
 
@@ -568,6 +653,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		
 	    $worker = CerberusApplication::getActiveWorker();
 
+		//TODO this isn't handling all ticket statuses
 		$properties = array(
 		    'message_id' => DevblocksPlatform::importGPC($_REQUEST['message_id']),
 		    'ticket_id' => $ticket_id,

@@ -74,7 +74,7 @@
 		{/if}
 
 		{if '' == $ticket->spam_training && $active_worker->hasPriv('core.ticket.actions.spam')}
-		<div>
+		<div class='spam_training'>
 			<h3>Spam Training: </h3>
 			<ul>
 				<li><label><input type="radio" name="spam_training" value="" checked="checked"> Unknown</label></li>
@@ -101,10 +101,10 @@
 				<td><input type="radio" name="status" value="0"/>Open</td>
 			</tr>
 			<tr>
-				<td><input type="radio" name="status" value="1" checked/>Waiting</td>
+				<td><input type="radio" name="status" value="2" checked/>Waiting</td>
 			</tr>
 			<tr>
-				<td><input type="radio" name="status" value="2"/>Closed</td>
+				<td><input type="radio" name="status" value="1"/>Closed</td>
 			</tr>
 			<tr>
 				<td><input type="radio" name="status" value="3"/>Deleted</td>

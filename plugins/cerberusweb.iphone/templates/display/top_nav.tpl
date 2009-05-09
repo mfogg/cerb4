@@ -3,7 +3,7 @@
 	<ul id="top_tabs">
 		<li class="top_tabs_selected"><a href="javascript:none();">Conv</a></li>{strip}
 		{/strip}<li{if $current_tab == "props"} class="top_tabs_selected"{/if}><a href="#">Props</a></li>{strip}
-		{/strip}<li{if $current_tab == "activity"} class="top_tabs_selected"{/if}><a href="#">Tasks</a></li>
+		{/strip}<li{if $current_tab == "tasks"} class="top_tabs_selected"{/if}><a href="#">Tasks</a></li>
 
 	</ul>
 </div>

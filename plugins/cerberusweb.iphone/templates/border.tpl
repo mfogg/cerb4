@@ -11,13 +11,14 @@
 
 <script>{literal}
 var DevblocksAppPath = '{/literal}{$smarty.const.DEVBLOCKS_WEBPATH}{literal}';
-var activeWorkerId = '{/literal}{$active_worker->id}{literal}';
+var activeWorkerId = {/literal}{$active_worker->id}{literal};
 String.prototype.trim = function() {
 	return this.replace(/^\s+|\s+$/g,"");
 }
 
 addEventListener('load', function() { setTimeout(hideAddressBar, 0); }, false);
 function hideAddressBar() { window.scrollTo(0, 1); }
+
 
 {/literal}
 </script>
