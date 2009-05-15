@@ -2,15 +2,15 @@
 	<img src="{devblocks_url}c=resource&p=cerberusweb.iphone&f=images/c4_logo_20.gif{/devblocks_url}" align="top">
 	<ul class="top_tabs top_tabs_home">
 		<li class="top_tabs_selected"><a href="javascript:void(0);">home</a></li>{strip}
-		{/strip}<li><a href="javascript:void(0);">mail</a></li>{strip}
-		{/strip}<li><a href="javascript:void(0);">activity</a></li>
+		{/strip}{* <li><a href="javascript:void(0);">mail</a></li>{strip}
+		{/strip}*}<li><a href="javascript:void(0);">activity</a></li>
 
 	</ul>
 	
 	<ul class="top_tabs top_tabs_display">
 		<li class="top_tabs_selected"><a href="javascript:none();">Conv</a></li>{strip}
 		{/strip}<li><a href="javascript:void(0);">Props</a></li>{strip}
-		{/strip}<li><a href="javascript:void(0);">Tasks</a></li>
+		{/strip}{* <li><a href="javascript:void(0);">Tasks</a></li> *}
 
 	</ul>
 </div>
@@ -94,11 +94,8 @@
 	</div>
 
 
-	<div id="reply">
 		{include file="$path/display/reply.tpl"}
-	</div>
 	
 		{include file="$path/display/properties.tpl"}
 
 </div>
-<div id="worklists"></div>

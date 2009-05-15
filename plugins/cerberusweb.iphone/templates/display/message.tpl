@@ -36,6 +36,8 @@
 		
 		<div class="block_info">
 			<span class="propId prop">{$message->id}</span>
+			<span class="propUnlock prop">{$unlock_date}</span>			
+			<span class="propReopen prop">{$reopen_date}</span>						
 		</div>
 </div>
 {*

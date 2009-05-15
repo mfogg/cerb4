@@ -124,6 +124,7 @@ div#toolbar div.tb a.tb_link_grayed {
 
 div#toolbar div.tb_right {
 	right: 10px;
+	display: none;
 }
 
 
@@ -270,12 +271,13 @@ ul.message_buttons li button {
 	display: none;
 }
 
+/*
 div#reply {
 	display: none;
 }
-
+*/
 div#reply_pane {
-	display: block;
+	display: none;
 	padding: 5px;
 	margin: 10px;
 	margin-left: 5px;

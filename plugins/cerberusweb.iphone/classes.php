@@ -210,7 +210,7 @@ class C4_IPhoneTicketView extends C4_TicketView {
 	function render() {
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->assign('id', $this->id);
-		$view_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/home/';
+		$view_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/display/';
 		$tpl->assign('view_path_mobile',$view_path_mobile);
 		$tpl->assign('view', $this);
 
@@ -233,12 +233,9 @@ class C4_IPhoneTicketView extends C4_TicketView {
 		$team_categories = DAO_Bucket::getTeams();
 		$tpl->assign('team_categories', $team_categories);
 
-//		// [TODO] Is this used here
 //		$ticket_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
 //		$tpl->assign('ticket_fields', $ticket_fields);
 //		
-//		// Undo?
-//		// [TODO] Is this used here
 //		$last_action = C4_TicketView::getLastAction($this->id);
 //		$tpl->assign('last_action', $last_action);
 //		if(!empty($last_action) && !is_null($last_action->ticket_ids)) {
@@ -393,10 +390,7 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		
 		
 		$json = json_encode($cerb4JSGlobal);
-		//echo $json;
 		$tpl->assign('jsglobal', $json);
-		//print_r($tpl);
-
 
 		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
 		$tpl->display('file:' . $tpl_path . 'display/display_head.tpl');
@@ -404,22 +398,20 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 
 	function render() {
 		
-		// draws HTML form of controls needed for login information
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
 		
 		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
 		//$translate = DevblocksPlatform::getTranslationService();
 		//$tpl->assign('translate', $translate);
+
 		$tpl->assign('path', dirname(__FILE__). "/templates");
 		$tpl->assign('current_tab', "home");
-
-
 
 		$workspaces = DAO_WorkerWorkspaceList::getWorkspaces($active_worker->id);
 		$tpl->assign('workspaces', $workspaces);
 
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/home/home.tpl');
+		$tpl->display('file:' . dirname(__FILE__) . '/templates/display/home.tpl');
 	}
 	
 	function getTimelineAndSenders($messages) {
@@ -458,63 +450,33 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 	}
 	
 	function showDisplayAction() {
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->cache_lifetime = "0";
-		
-		$tpl->assign('current_tab', "mail");
-		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
-		//$translate = DevblocksPlatform::getTranslationService();
-		//$tpl->assign('translate', $translate);
-		
 		$web_path =  DevblocksEngine::getWebPath();
-		//echo $web_path;
-		
-		//$mask = substr(strrchr($web_path, "/"), 1);
-		//$id = DAO_Ticket::getTicketIdByMask($mask);
-		
 		$id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
-			
-		//@$id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
-		
 		@$active_worker = CerberusApplication::getActiveWorker();
 		
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->assign('path', dirname(__FILE__). "/templates");
-
 		$ticket = DAO_Ticket::getTicket($id);
-		$tpl->assign('ticket', $ticket);
-		//$tpl->assign('requesters', $ticket->getRequesters());
 		$requesters = $ticket->getRequesters();
-		
 		$messages = $ticket->getMessages();
-		
 		$message_headers = DAO_MessageHeader::getByTicketId($id);
-		
 		arsort($messages);
 				
-		$tpl->assign('latest_message_id',key($messages));
-		$tpl->assign('messages', $messages);
-
-
 		$result = self::getTimelineAndSenders($messages);
 		$convo_timeline = $result['convo_timeline'];
 		$message_senders = $result['message_senders'];
 		$message_sender_orgs = $result['message_sender_orgs'];
-		
-		$tpl->assign('message_senders', $message_senders);
-		$tpl->assign('message_sender_orgs', $message_sender_orgs);
 		
 		@$mail_inline_comments = DAO_WorkerPref::get($active_worker->id,'mail_inline_comments',1);
 		
 		if($mail_inline_comments) { // if inline comments are enabled
 			$comments = DAO_TicketComment::getByTicketId($id);
 			arsort($comments);
-			$tpl->assign('comments', $comments);
-			
 			// build a chrono index of comments
 			foreach($comments as $comment_id => $comment) { /* @var $comment Model_TicketComment */
 				$key = $comment->created . '_c' . $comment_id;
 				$convo_timeline[$key] = array('c',$comment_id);
+				
+				//also get the email address
+				$comment->address = $comment->getAddress();
 			}
 		}
 		
@@ -524,36 +486,17 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		} else {
 			ksort($convo_timeline);
 		}
-		$tpl->assign('convo_timeline', $convo_timeline);
 		
-		//TODO this isn't working
-		$last_convo_block = $convo_timeline[count($convo_timeline)];
-		if($last_convo_block[0]=='m') {
-			$mid = $last_convo_block[1];
-			$messages[$mid]->content =  DAO_MessageContent::get($mid);
-		}
+//		//TODO this is meant to cause the first message to expand, but not required yet
+//		$last_convo_block = $convo_timeline[count($convo_timeline)-1];
+//		if($last_convo_block[0]=='m') {
+//			$mid = $last_convo_block[1];
+//			$messages[$mid]->content =  DAO_MessageContent::get($mid);
+//		}
 		
-		
-//		// Message toolbar items
-//		$messageToolbarItems = DevblocksPlatform::getExtensions('cerberusweb.message.toolbaritem', true);
-//		if(!empty($messageToolbarItems))
-//			$tpl->assign('message_toolbaritems', $messageToolbarItems);
 		
 
-//all this moved to main page load for global js scope
-//		 Workers
-//		$workers = DAO_Worker::getAll();
-//		$tpl->assign('workers', $workers);
-//		
-//		$teams = DAO_Group::getAll();
-//		$tpl->assign('teams', $teams);
-//
-//		$team_categories = DAO_Bucket::getTeams();
-//		$tpl->assign('team_categories', $team_categories);		
-
-
-
-//		// Custom fields
+//		//TODO Custom fields
 //		$custom_fields = DAO_CustomField::getBySource(ChCustomFieldSource_Ticket::ID);
 //		$tpl->assign('custom_fields', $custom_fields);
 //		
@@ -574,55 +517,38 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 //		}
 //		$tpl->assign('custom_field_id_str', $field_id_str);
 		
-		
-		
-		
-		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
 		$disp_obj = new stdClass;
-//		$disp_obj->ticket = new stdClass;
-
 		
 		$ticket->conversation = $convo_timeline;
 		$ticket->messages = $messages;
 		$ticket->message_senders = $message_senders;
-		$ticket->comments = $mail_inline_comments;
+		$ticket->comments = $comments;
 		$ticket->headers = $message_headers;
 		$ticket->requesters = $requesters;
 		//print_r($ticket);
 		$disp_obj->ticket = $ticket;
 
-		
 		echo json_encode($disp_obj);
-		
-		
-		
-		
-		//$tpl->display('file:' . dirname(__FILE__) . '/templates/display/display.tpl');
-		
 	}
 
 	
 	function retrieveMessageAction() {
-		//echo "This is my message body!!!";
-		
 		@$id = DevblocksPlatform::importGPC($_REQUEST['msgid']); // message id
 		
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
 		
-		
-		//$tpl->assign('path', dirname(__FILE__). "/templates");
 		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
-		
-//		$tpl->assign('path', $this->_TPL_PATH);
-
-//		$message = DAO_Ticket::getMessage($id);
-//		$tpl->assign('message', $message);
-//		$tpl->assign('message_id', $message->id);
-		
+	
 		$content = DAO_MessageContent::get($id);
 		$tpl->assign('content', $content);
 			
+		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
+		$tpl->display('file:' . $tpl_path . 'display/message_content.tpl');
+		
+	}
+
+//	function fetchNotes() {
 //		$notes = DAO_MessageNote::getByTicketId($message->ticket_id);
 //		$message_notes = array();
 //		// Index notes by message id
@@ -632,16 +558,13 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 //				$message_notes[$note->message_id] = array();
 //			$message_notes[$note->message_id][$note->id] = $note;
 //		}
-//		$tpl->assign('message_notes', $message_notes);
+//		$tpl->assign('message_notes', $message_notes);		
+//	}	
 
-
-		//$tpl->assign('expanded', false);
-		//$tpl->assign('fetch_content', true);
-		
-		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
-		$tpl->display('file:' . $tpl_path . 'display/message_content.tpl');
-		
-	}
+//	comment text is fetched with the conversation
+//	function retrieveCommentAction() {
+//		echo "";
+//	}
 
 	function sendReplyAction() {
 	    @$ticket_id = DevblocksPlatform::importGPC($_REQUEST['ticket_id'],'integer');
@@ -653,7 +576,6 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		
 	    $worker = CerberusApplication::getActiveWorker();
 
-		//TODO this isn't handling all ticket statuses
 		$properties = array(
 		    'message_id' => DevblocksPlatform::importGPC($_REQUEST['message_id']),
 		    'ticket_id' => $ticket_id,
@@ -684,9 +606,6 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 			}
 		}
 
-
-		
-
 		$tpl->assign('message_senders', $message_senders);
 		$tpl->assign('message_sender_orgs', $message_sender_orgs);
 		$tpl->assign('message', $message);
@@ -694,25 +613,25 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		$tpl->assign('expanded', false);
 		$tpl->assign('fetch_content', true);
 		
-		//$tpl->assign('active_worker', "");
-
+		//we include these date values in the template in special hidden spans
+		//so the client can get the results of strtotime to updat the client storage of the values
+		$reopen = ($properties['ticket_reopen']!='') ? strtotime($properties['ticket_reopen']) : '';
+		$unlock = ($properties['unlock_date']!='') ? strtotime($properties['unlock_date']) : '';
+		$tpl->assign('reopen_date', $reopen);
+		$tpl->assign('unlock_date', $unlock);
+		
+		$tpl->assign($tpl_var);
+		
 
 		//echo CerberusUtils::smarty_modifier_makehrefs("whatevers");
 		$tpl->register_modifier('makehrefs', array('CerberusUtils', 'smarty_modifier_makehrefs')); 
 		
-		
-		
-		
-		//$message
-		//message_senders
-		//translations
-		//expanded=true
-		//active_worker
-		//
-		//$tpl->display('file:' . dirname(__FILE__) . '/templates/display/message.tpl');
 		$tpl->display('file:' . $tpl_path . 'display/message.tpl');
 	}	
 	
+	/*
+	 * handle ticket actions (toolbar buttons)
+	 */
 	function updatePropertiesAction() {
 		@$id = DevblocksPlatform::importGPC($_REQUEST['id']); // ticket id
 		@$closed = DevblocksPlatform::importGPC($_REQUEST['closed'],'integer',0);
@@ -770,6 +689,9 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 	}	
 	
 
+	/*
+	 * Handle saving from the properties tab
+	 */
 	function savePropertiesAction() {
 		@$ticket_id = DevblocksPlatform::importGPC($_POST['ticket_id'],'integer',0);
 		@$remove = DevblocksPlatform::importGPC($_POST['remove'],'array',array());
@@ -784,7 +706,9 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 		
 		@$ticket = DAO_Ticket::getTicket($ticket_id);
 		
-
+		//these will be output in the response so the client can take advantage of php's strtotime calculation
+		$time_reopen=0;
+		$time_unlock=0;
 		
 		if(empty($ticket_id) || empty($ticket))
 			return;
@@ -811,8 +735,8 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 					$fields[DAO_Ticket::IS_DELETED] = 0;
 					
 					if(isset($ticket_reopen)) {
-						@$time = intval(strtotime($ticket_reopen));
-						$fields[DAO_Ticket::DUE_DATE] = $time;
+						@$time_reopen = intval(strtotime($ticket_reopen));
+						$fields[DAO_Ticket::DUE_DATE] = $time_reopen;
 					}
 					break;
 				case 2: // waiting
@@ -821,8 +745,8 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 					$fields[DAO_Ticket::IS_DELETED] = 0;
 					
 					if(isset($ticket_reopen)) {
-						@$time = intval(strtotime($ticket_reopen));
-						$fields[DAO_Ticket::DUE_DATE] = $time;
+						@$time_reopen = intval(strtotime($ticket_reopen));
+						$fields[DAO_Ticket::DUE_DATE] = $time_reopen;
 					}
 					break;
 				case 3: // deleted
@@ -838,8 +762,8 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 			$fields[DAO_Ticket::NEXT_WORKER_ID] = $next_worker_id;
 			
 		if(isset($unlock_date)) {
-			@$time = intval(strtotime($unlock_date));
-			$fields[DAO_Ticket::UNLOCK_DATE] = $time;
+			@$time_unlock = intval(strtotime($unlock_date));
+			$fields[DAO_Ticket::UNLOCK_DATE] = $time_unlock;
 		}
 
 		if(!empty($subject))
@@ -924,62 +848,12 @@ class ChIPhoneDisplayPage  extends CerberusIPhonePageExtension  {
 			}
 		}
 		
+		$returnVal->time_reopen = $time_reopen;
+		$returnVal->time_unlock = $time_unlock;
+	
+		echo json_encode($returnVal);
 	}
 
-	
-	
-	function retrieveCommentAction() {
-		echo "hi";
-	}
-	
-	function showDisplayTicket() {
-			
-	}
-
-};
-
-
-class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
-	function __construct($manifest) {
-		parent::__construct($manifest);
-	}
-	
-	function isVisible() {
-		return true;
-	}
-	
-	function drawResourceTags() {
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl_path = DEVBLOCKS_PLUGIN_PATH . 'cerberusweb.iphone/templates/';
-		$tpl->display('file:' . $tpl_path . 'home/home_head.tpl');
-	}
-	
-	
-	function render() {
-		
-		// draws HTML form of controls needed for login information
-		$tpl = DevblocksPlatform::getTemplateService();
-		$tpl->cache_lifetime = "0";
-		
-		// add translations for calls from classes that aren't Page Extensions (iphone plugin, specifically)
-		//$translate = DevblocksPlatform::getTranslationService();
-		//$tpl->assign('translate', $translate);
-		$tpl->assign('path', dirname(__FILE__). "/templates");
-		$tpl->assign('current_tab', "home");
-
-
-		$workspaces = DAO_WorkerWorkspaceList::getWorkspaces($active_worker->id);
-		$tpl->assign('workspaces', $workspaces);
-
-		$tpl->display('file:' . dirname(__FILE__) . '/templates/home/home.tpl');
-	}
-
-
-	
-	function showNotificationsAction() {
-		
-	}
-	
 	function showWorklistsAction() {
 		$current_workspace = DevblocksPlatform::importGPC($_REQUEST['workspace'],'string','');
 
@@ -989,16 +863,6 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 
 		$tpl = DevblocksPlatform::getTemplateService();
 		$tpl->cache_lifetime = "0";
-		
-//		// Fix a bad/old cache
-//		if(!empty($current_workspace) && false === array_search($current_workspace,$workspaces))
-//			$current_workspace = '';
-//		
-//		$views = array();
-//			
-//		if(empty($current_workspace) && !empty($workspaces)) { // custom dashboards
-//			$current_workspace = reset($workspaces);
-//		}
 		
 		if(!empty($current_workspace)) {
 			
@@ -1011,16 +875,8 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 
 			$tpl->assign('worklists', $lists);
 			$tpl->assign('current_workspace', $current_workspace);
-			$tpl->display('file:' . dirname(__FILE__) . '/templates/home/worklists.tpl');
-
-//	        // Loop through list schemas
-//			if(is_array($lists) && !empty($lists))
-//			foreach($lists as $list) { /* @var $list Model_WorkerWorkspaceList */
-//				
-//			}
+			$tpl->display('file:' . dirname(__FILE__) . '/templates/display/worklists.tpl');
 		}
-		
-		
 	}
 	
 
@@ -1032,10 +888,9 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 		$tpl->cache_lifetime = "0";
 		
 		$list = DAO_WorkerWorkspaceList::get($view_id);
-//		print_r($list);
 		$view_id = 'cust_'.$list->id;
 		
-		//TODO probably want to allow caching sometimes
+		//TODO maybe want to allow caching sometimes
 		if(null == ($view = C4_AbstractViewLoader::getView('',$view_id)) || 1==1) {
 			$list_view = $list->list_view; /* @var $list_view Model_WorkerWorkspaceListView */
 			
@@ -1071,5 +926,6 @@ class ChIPhoneHomePage  extends CerberusIPhonePageExtension  {
 	}
 
 };
+
 
 ?>

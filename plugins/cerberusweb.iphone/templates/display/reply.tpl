@@ -12,13 +12,7 @@
 	</table>
 	<table class="reply_only">
 		<tr>
-			<td>Requesters: </td>
-		</tr>
-		<tr>
-			<td>
-				<select name="requesters" multiple style="width: 100%;">
-				</select>
-			</td>
+			<td>Requesters: <span id="requesters"></span></td>
 		</tr>
 	</table>
 	<table>
@@ -58,7 +52,7 @@
 	<tr>
 	<td id="reply_next_actions_bar"></td>
 	<td>
-	
+		<form>
 		<table>
 			<tr>
 				<td colspan="2">Next:</td>
@@ -77,7 +71,8 @@
 				<td>Closed</td>
 			</tr>
 		</table>
-		<table>
+		</form>
+		<table class="properties_resume">
 			<tr>
 				<td>When to resume? <span class="eg">(e.g. "Friday", "7 days", "Tomorrow 11:15AM", "Dec 31")</span></td>
 			</tr>

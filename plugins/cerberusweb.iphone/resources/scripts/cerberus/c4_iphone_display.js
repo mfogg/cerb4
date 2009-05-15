@@ -8,99 +8,111 @@ $(document).ready(function(){
 	var workspaceName = $('#tb_workspaces select').val();
 	workspaceChanged(workspaceName);
 	
-	
 	console.log($('#top_nav .top_tabs_display li a'));
 	$('#top_nav .top_tabs_display li a').click(function(event) {tabClick(event.target)});
 	
-	
-	$('#toolbar #tb_reply #tb_btn_back_display').click(function(event) {	showDisplay(event); });
+	$('#toolbar #tb_reply #tb_btn_back_display').click(function(event) { 	tabChangeSubscreen('Conv', 'convo_tab', true); });
 	$('#toolbar #tb_display #tb_btn_back_display2').click(function(event) {	showHome(event); });	
+	$('#toolbar #tb_display_right').click(function() {tabChangeSubscreen('Conv', 'reply_pane', true);});
 
-	$('div#reply_pane button#reply_me_button').click(function(event) { replyMePressed(event);});
-	$('div#reply_pane button#reply_anybody_button').click(function(event) { replyAnyPressed(event);});
-	$('div#reply_pane select[name=next_worker]').change(function(event) { nextWorkerChanged();});
-
-	$('#reply_pane #send_button').click(function(event) { sendReply(); });
-	console.log($('#reply_pane #discard_reply').click());
-
-	$('#reply_pane #discard_reply').click(function(event) { showDisplay()});
-	
+	initTabState();
 	initPropertiesTab();
-	
-//	console.log(	$('#reply_pane #discard_reply').click());
-//	var propContainer = $('#properties_container');
-//	propContainer.find('#properties_me_button').click(function(event) {propertiesMePressed('properties')});
-//	propContainer.find('#properties_anybody_button').click(function(event) { propertiesAnyPressed('properties');});	
-//	propContainer.find('input[name=status]').change(function(event) { propertiesToggleResumeDiv('properties')});		
-//	propContainer.find('select[name=next_worker]').change(function(event) { propertiesNextWorkerChanged('properties');});	
-//	propContainer.find('#save_properties_button').click(function(event) { propertiesSave();});	
-//	propertiesToggleResumeDiv();
-	
-	
-	
+	initReplyPane();
 });
 
-//function changeScreen(screenName) {
-//	//screens are 'worklists' and 'display'
-//	var screens = ['worklists','display'];
-//	
-//	for (i = 0; i < screens.length; i++) {
-//		if (screens[i] != screenName) {
-//			$(screens[i]).hide();
-//		}
-//	}
-//	$(screenName).show();
-//}
+
+function initTabState() {
+	var tabMap = [];
+	tabMap['Conv'] = {key: "Conv",current_sub:"convo_tab",subscreens: {convo_tab: {tb: "tb_display,tb_display_right"}, reply_pane: {tb: "tb_reply"}}, callback: function(screen) {$('#tb_display_right').toggle($("#reply_pane input[name=message_id]").val()!='' && screen=='convo_tab')	}};
+	tabMap['Props'] = {key: "Props",current_sub:"properties_container",subscreens: {properties_container: {tb: null}}, callback: function(screen) {initPropertiesTabForTicket();}};
+	
+	cerb4.displayTab = "Conv";
+	cerb4.tabMap = tabMap;	
+}
 
 function tabClick(tabLink) {
-	console.log('hi');
 	tabClick(tabLink, null);
 }
 
 function tabClick(tabLink, contentDivName) {console.log(tabLink+'-'+contentDivName);
-	var tabMap = [];
-	tabMap['Conv'] = {key: "Convo", contentId: "convo_tab", toolbar: "tb_display"};
-	tabMap['Props'] = {key: "Props",contentId: "properties_container",toolbar: null};
-	
+	var tabMap = cerb4.tabMap;
 	var tabObj = $(tabLink).parent();
-	console.log($(tabLink).text());
 	var tabName = $(tabLink).text();
-	
-	var toolbarObj = $("#" + tabMap[tabName].toolbar);
-	
-	if(contentDivName != null) {
-		contentObj = $("#"+contentDivName);
-	}
-	else {
-		contentObj = $("#" + tabMap[tabName].contentId);
-		contentDivName = tabMap[tabName].contentId;
-	}
 	
 	//update tabs
 	$("#top_nav .top_tabs_display li.top_tabs_selected").removeClass('top_tabs_selected');
 	tabObj.addClass('top_tabs_selected');
 	
-	//update toolbar
-	$("#toolbar div").hide();
-	toolbarObj.show();
+	
+	tabChangeSubscreen(tabName, null);
+	cerb4.displayTab = tabName;
+}
+
+function tabChangeSubscreen(tabName, subscreen) {tabChangeSubscreen(tabName, subscreen, false)};
+function tabChangeSubscreen(tabName, subscreen, fade) {
+	var tabMap = cerb4.tabMap;
+	var oldTabName = cerb4.displayTab;
+	
+	//if no subscreen specified, use the last accessed as default
+	if(subscreen == null) {
+		subscreen = tabMap[tabName].current_sub;
+	}
+	
+	var toolbars = [];
+	var toolbarsStr = tabMap[tabName].subscreens[subscreen].tb;
+	if(toolbarsStr != null) {
+		toolbars = toolbarsStr.split(',');
+	}
+	var oldSubscreen = tabMap[oldTabName].current_sub;
+	
+	//hide the toolbars from before
+	var oldToolbars = [];
+	var oldToolbarsStr = tabMap[oldTabName].subscreens[oldSubscreen].tb;
+	if (oldToolbarsStr != null) {
+		oldToolbars = oldToolbarsStr.split(',');
+		for (var a in oldToolbars) {
+			$("#" + oldToolbars[a]).hide();
+		}
+	}
+	//this might be better for hiding than the loop above:
+	//$("#toolbar div").hide();
+
+	//show the new current toolbars
+	for(var a in toolbars) {
+		$("#"+toolbars[a]).show();
+	}
+
+	//each tab is allowed to specify a callback function.  call it here
+	console.log(tabMap[tabName].callback);
+	if (tabMap[tabName].callback != null) {
+		tabMap[tabName].callback(subscreen);
+	}
 
 //	//update content
-	$("#"+currentContent).hide();
-	contentObj.show();
-	currentContent = contentDivName;
+	if (fade) {
+		$("#" + oldSubscreen).fadeOut("slow", function(){
+			scrollTo(0, 0);
+			$("#" + subscreen).fadeIn("slow");
+		});
+	}
+	else {
+		$("#"+oldSubscreen).hide();
+		$("#"+subscreen).show();
+	}
+	//set the map to point to the new current subscreen
+	tabMap[tabName].current_sub = subscreen;
+
 }
 
 function doConvoBlockToggle(container) {
 	if(!container.hasClass("convo_block_container")) {
 		container = container.parents("div.convo_block_container");
 	}
-	
 
 	var convo_block_pane = $("div.convo_block_pane", container);
 	var convo_block_content = $("div.convo_block_content", convo_block_pane);
 	
 	$("ul.convo_block_headers li.extra_header", container).slideToggle();
-	//console.log(convo_block_content.html());
 	if(convo_block_content.html().trim().length > 0) {
 		convo_block_pane.slideToggle();
 		container.toggleClass("convo_block_expanded");
@@ -116,7 +128,9 @@ function doConvoBlockToggle(container) {
 			ajaxParams = {c: "iphone", a: "display", a2: "retrieveMessage", msgid: blockId};
 		}
 		else {
-			ajaxParams = {c: "iphone", a: "display", a2: "retrieveComment", commentid: blockId};
+			//ajaxParams = {c: "iphone", a: "display", a2: "retrieveComment", commentid: blockId};
+			//comments now always get their content when the conversation is loaded...no need to ajax
+			return;
 		}
 		
 		$.get(DevblocksAppPath + "ajax.php", 
@@ -142,6 +156,7 @@ function replyButton(event) {
 	event.preventDefault();
 	
 	var c4 = cerb4;
+	var ticket = c4.ticket;
 	var workers = c4.workers;
 
 	var button = $(event.target);
@@ -154,19 +169,11 @@ function replyButton(event) {
 	var messageContainer = button.parents(".message_container");
 	
 	var messageId = messageContainer.find("div.block_info .propId").text();
-	//var subject = $("ul.convo_block_headers li.msg_subject span.header_val", messageContainer).text();
-	//console.log(c4.ticket.messages[messageId]);
 
 	var content = $("div.convo_block_pane div.convo_block_content", messageContainer).text();
 	//probably should get content the way below, but the above makes use of smarty conveniences modifiers
 	//var content = c4.ticket.messages[messageId].content;
 
-
-	
-
-	//console.log(c4.ticket.messages[messageId]);
-
-	
 	var replyPane = $("div#reply_pane");
 	var isForward = button.is(".btnForward");
 	var heading="";
@@ -180,48 +187,62 @@ function replyButton(event) {
 	}
 	else {
 		heading="Reply";
-		subjectPrefix = "Re: ";
+		//subjectPrefix = "Re: ";
 
 		replyPane.find("table.forward_only").hide();
 		replyPane.find("table.reply_only").show();
 
-		var requesters = c4.ticket.requesters;
-		var optionsStr = '';
+		var requesters = ticket.requesters;
+		var requesterStr = '';
+		var firstTime = true;
 		for(var a in requesters) {
-			optionsStr += '<option value="'+ requesters[a].id + '" selected>'+requesters[a].email + '</option>';
+			if (!firstTime) {
+				requesterStr += ', ';
+			}
+			else firstTime = false;
+			requesterStr += requesters[a].email ;
 		}
-		var requestersSel = replyPane.find("select[name=requesters]");
-		requestersSel.html(optionsStr);
+		replyPane.find('#requesters').text(requesterStr);
 		
-//		replyPane.find("select[name=requesters] *").attr('selected','selected');
+		//TODO put the 'ON <date>,<email> wrote:' here
 		content = "> " + content.replace(/[\n]/gi, "\n> ") + "\n\n";
 	}
 	
-	createWorkerOptions(replyPane.find('select[name=next_worker]'));
-	
-	subject = subjectPrefix + c4.ticket.subject;
+	//set subject
+	subject = subjectPrefix + ticket.subject;
 
-
+	//set status
 	var statusInput = replyPane.find("input[name=status]");
 	var statusVal = getTicketStatusValue();
+	
 	statusInput.filter('[value='+statusVal+']').attr('checked','checked');
-	//statusInput.val(statusVal);
 
+	//show/hide the 'resume' div based on status
+	if (ticket.due_date > 0) {
+		replyPane.find("input[name=ticket_reopen]").val(c4Date(ticket.due_date));
+	}
+	propertiesToggleResumeDiv('reply');
+
+	//set next worker
+	var workerSelect = replyPane.find('select[name=next_worker]');
+	workerSelect.val(ticket.next_worker_id);
+
+	if (ticket.unlock_date != 0) {
+		replyPane.find("input[name=unlock_date]").val(c4Date(ticket.unlock_date));
+	}
+	//show/hide 'release after x' div based on next worker
+	propertiesNextWorkerChanged('properties');
+
+	//set reply related fields
 	replyPane.find("textarea[name=content]").val(content);
 	replyPane.find("h1#reply_pane_title").text(heading);
 	replyPane.find("input[name=subject]").val(subject);
 	replyPane.find("input[name=cc]").text("");
 	replyPane.find("input[name=bcc]").text("");
-	
 	replyPane.find("input[name=message_id]").val(messageId);
 	
-	$("div#toolbar div#tb_display").hide();
-	$("div#toolbar div#tb_reply").show();
 	
-	$("#convo_tab").fadeOut("slow", function() {
-		scrollTo(0,0);
-		$("#reply").fadeIn("slow");	
-	});
+	tabChangeSubscreen('Conv', 'reply_pane', true);
 	
 }
 
@@ -281,26 +302,6 @@ function nextWorkerChanged() {
 	}
 }
 
-function showDisplay() {
-	showDisplay(null);
-}
-
-function showDisplay(event){
-	if (event != null) {
-		event.stopPropagation();
-		event.preventDefault();
-	}
-	
-
-	$("#toolbar div#tb_reply").hide();
-	$("#toolbar div#tb_display").show();
-	
-	$("#reply").fadeOut("slow", function() {
-		scrollTo(0,0);
-		$("#convo_tab").fadeIn("slow");	
-	});
-		
-}
 
 function bindMessageHandlers() {
 	var firstBlock = $('#conversation div.convo_block_container:first-child');
@@ -325,6 +326,10 @@ function sendReply() {
 		}
 	}
 	
+	var subject = replyPane.find("input[name=subject]").val();
+	var nextWorkerId = replyPane.find("select[name=next_worker]").val();
+	var closed = replyPane.find("input[name=status]:checked").val();
+	
 	var ajaxParams = {
 		c: "iphone",
 		a: "display",
@@ -334,10 +339,10 @@ function sendReply() {
 		to: to,
 		cc: replyPane.find("input[name=cc]").val(),
 		bcc: replyPane.find("input[name=bcc]").val(),
-		subject: replyPane.find("input[name=subject]").val(),
+		subject: subject,
 		content: replyPane.find("textarea[name=content]").val(),
-		next_worker_id: replyPane.find("select[name=next_worker]").val(),
-		closed: replyPane.find("input[name=status]:checked").val(),
+		next_worker_id: nextWorkerId,
+		closed: closed,
 		bucket_id: "",
 		ticket_reopen: replyPane.find("input[name=ticket_reopen]").val(),
 		unlock_date: replyPane.find("input[name=unlock_date]").val(),
@@ -349,14 +354,43 @@ function sendReply() {
 				$("#display #conversation").prepend(xml).find("div.convo_block_container:first-child").fadeIn("slow" ,function() {
 					doConvoBlockToggle($(this));
 					bindMessageHandlers();
+					
+					var ticket = cerb4.ticket;
+
+					//after the reply is sent, update the local ticket object properties
+					//to reflect the changes.
+					if(subject != ticket.subject) {
+						$("#display_top > h1").text(subject);
+						ticket.subject = subject;
+					}
+					ticket.nextWorkerId = nextWorkerId;
+					
+					ticket.is_closed = (closed==1);
+					ticket.is_waiting = (closed==2);
+					ticket.is_deleted = (closed==3);
+
+					//unlock and reopen dates are embedded hidden in the message since we needed to get phps strtotime on them
+					var blockInfo = $(this).find('div.block_info');
+					ticket.unlock_date = blockInfo.find('.propUnlock').text();
+					ticket.reopen_date = blockInfo.find('.propReopen').text();
+					
+					if(ticket.unlock_date == '') ticket.unlock_date = 0;
+					if(ticket.reopen_date == '') ticket.reopen_date = 0;
+					
+					//update the visuals (ticket action buttons etc)
+					updateTicketActionStates();
 				});
 			}, "html");
-			
-	showDisplay();
 
+	//clear the id so the screen change function will know to hide the upper right reply link
+	replyPane.find("input[name=message_id]").val("");
+	tabChangeSubscreen('Conv', 'convo_tab', true);
 }
 
-
+/*
+ * Make the actual ajax call for when a user clicks one of the ticket 'actions'
+ * from the toolbar of the conversation screen
+ */
 function performTicketAction(event) {
 	var ticket = cerb4.ticket;
 	var linkId = $(event.target).parent().attr('id');
@@ -395,7 +429,12 @@ function performTicketAction(event) {
 	updateTicketActionStates();
 }
 
-
+/*
+ * Updates the ticket actions toolbar to corectly reflect their state
+ * e.g. fade out buttons that should be 'disabled',
+ * swap button images,
+ * add/remove click handlers as appropriate
+ */
 function updateTicketActionStates() {
 	$("#tb_display a").each(function() {
 		var link = $(this);
@@ -461,25 +500,10 @@ function updateTicketActionStates() {
 		}
 
 	});
+	
+	//update the properties box at the top of the conversation screen
 	setTicketPropertiesBox();
 
-}
-
-function doDeletedToolbarState() {
-	var spamLink = $("#tb_btn_spam");
-	spamLink.addClass('tb_link_grayed');
-	spamLink.removeAttr('href');
-	spamLink.unbind('click');
-	
-	var closedLink = $("#tb_btn_close");
-	closedLink.addClass("tb_link_grayed");
-	closedLink.removeAttr("href");
-	closedLink.unbind('click');
-	
-	var deletedLink = $("#tb_btn_delete");
-	deletedLink.addClass('tb_link_grayed');	
-	
-	$("#properties #dispropStatus").text("Deleted");
 }
 
 function propertiesAnyPressed(type) {
@@ -509,9 +533,8 @@ function propertiesNextWorkerChanged(type) {
 function propertiesToggleResumeDiv(type) {
 	var containerName = getPropertiesContainer(type);
 	var container = $(containerName);
-	var resumeDiv = container.find("div.properties_resume");
+	var resumeDiv = container.find(".properties_resume");
 	var statusVal = container.find("input[name=status]:checked").val();
-	//console.log(statusVal);
 	
 	if(container.css("display") == "block") {
 		var opacity = (statusVal==1 || statusVal == 2) ? "show" : "hide";
@@ -536,7 +559,9 @@ function getPropertiesContainer(type) {
 }
 
 function propertiesSave() {
-	var ticketId = $("#properties div.ticketIdDval").text();
+	var ticket = cerb4.ticket;
+	
+	var ticketId = ticket.id;
 	
 	var propertiesContainer = $("#properties_container");
 	
@@ -564,7 +589,9 @@ function propertiesSave() {
 		bucket_id: bucketId,
 		custom_field_id_str: customFieldIds
 	};
-		
+	
+	//TODO readd custom fields save code 
+	/*	
 	var customFields = customFieldIds.split(",");
 	for(var a in customFields) {
 		var postKey = "field_"+customFields[a];
@@ -611,13 +638,44 @@ function propertiesSave() {
 		}
 		
 	}
-
-
-	console.log(ajaxParams);
+	*/
 
 	$.post(DevblocksAppPath + "ajax.php", 
 			ajaxParams, 
-			function(xml) {}, "html");
+			function(json) {
+				var obj = eval(json);
+				//most values are updated without waiting for the server's response,
+				//however these two dates need strtotime results only php can provide, 
+				//so update fields and local model with values from server
+				ticket.due_date = obj.time_reopen;
+				propertiesContainer.find("input[name=ticket_reopen]").val(c4Date(obj.time_reopen));
+
+				ticket.unlock_date = obj.time_unlock;
+				propertiesContainer.find("input[name=unlock_date]").val(c4Date(obj.time_unlock));
+
+			}, "json");
+
+
+	ticket.next_worker_id = nextWorkerId;
+	//ticket.due_date = ticketReopen;
+	//ticket.unlock_date = unlockDate;
+	ticket.subject = subject;
+	ticket.is_closed = (statusVal==1);
+	ticket.is_waiting = (statusVal==2);
+	ticket.is_deleted = (statusVal==3);
+	ticket.spam_training = spamTraining;
+	
+	var teamOrCat = bucketId.substring(0,1);
+	var teamOrCatId = bucketId.substring(1);
+	if(teamOrCat == 'c') {
+		ticket.category_id = teamOrCatId;
+	}
+	else {//teamOrCat == 't'
+		ticket.team_id = teamOrCatId;		
+	}
+
+	updateTicketActionStates();//implicitely updates ticket property box too	
+
 }
 
 
@@ -628,7 +686,7 @@ function propertiesSave() {
 function workspaceChanged(workspaceName) {
 	var ajaxPath = DevblocksAppPath + "ajax.php";
 	$.get(ajaxPath, 
-			{c: "iphone", a: "home", a2: "showWorklists", workspace: workspaceName}, 
+			{c: "iphone", a: "display", a2: "showWorklists", workspace: workspaceName}, 
 			function(xml) {
 				var worklistsDiv = $("div#worklists");
 				worklistsDiv.html(xml).show();
@@ -679,16 +737,13 @@ function clickView(headerDiv) {
 
 function loadView(containerDiv, page, isPaging) {
 	var headerDiv = containerDiv.children("div.worklist_header");
-
 	var headerText = headerDiv.text();
-	
 	var viewId = $("div.dval_viewid", containerDiv).text();
-	
 	var contentDiv = $("div.worklist_content", containerDiv);
 	
 	var ajaxPath = DevblocksAppPath + "ajax.php";
 	$.get(ajaxPath, 
-			{c: "iphone", a: "home", a2: "showView", view_id: viewId, page: page}, 
+			{c: "iphone", a: "display", a2: "showView", view_id: viewId, page: page}, 
 			function(xml) {
 				contentDiv.fadeOut("normal", function() {
 					if (isPaging) {
@@ -709,7 +764,7 @@ function loadView(containerDiv, page, isPaging) {
 //						//console.log(li.scrollTop());
 						
 						var ticketId = parseInt(li.find('div.dval_ticket_id').text());
-						console.log("ticketId="+ticketId);
+						//console.log("ticketId="+ticketId);
 						loadDisplay(ticketId); 
 					});
 
@@ -729,8 +784,6 @@ function updatePagingLinks(viewPagingDiv) {
 	
 	
 	var viewPagingObjStr = viewPagingLinks.parent().parent().find(".worklist_content_container div.dval_view_paging").text();
-	//alert(viewPagingObjStr);
-	//console.log(new String("("+viewPagingObjStr+")"));
 	var viewPagingObj =  eval("("+viewPagingObjStr+")");
 
 
@@ -739,19 +792,13 @@ function updatePagingLinks(viewPagingDiv) {
 	var linkNext = viewPagingLinks.find(".view_page_link_next").parent();
 	var linkLast = viewPagingLinks.find(".view_page_link_last").parent();
 	
-	//console.log(viewPagingObj.currentPage + " >= 0");
-	//console.log(viewPagingObj.toRow + " < "+viewPagingObj.total);
-	
 	var previousVisibility = (parseInt(viewPagingObj.currentPage) > 0) ? "visible" : "hidden";
 	var nextVisibility =  ( parseInt(viewPagingObj.toRow) < parseInt(viewPagingObj.total)) ? "visible" : "hidden";
-	//alert(previousVisibility + ":" + nextVisibility);
-	//console.log(previousVisibility + ":" + nextVisibility);
 	
 	//show or hide the next/prev view links
 	linkPrev.css("visibility", previousVisibility);
 	linkFirst.css("visibility", previousVisibility);
 	
-	//console.log("setting linkNext visibility to %s", nextVisibility);
 	linkNext.css("visibility", nextVisibility);
 	linkLast.css("visibility", nextVisibility);		
 	
@@ -761,10 +808,7 @@ function updatePagingLinks(viewPagingDiv) {
 	linkNext.data("page", viewPagingObj.nextPage);
 	linkLast.data("page", viewPagingObj.lastPage);
 	
-	//console.debug(viewPagingDiv.children("div.view_paging_text"));
 	viewPagingDiv.children("div.view_paging_text").text(viewPagingObj.pageDesc);
-	//console.debug(viewPagingDiv.children("div.view_paging_text"));
-	//console.log(viewPagingObj.prevPage + ":"+viewPagingObj.nextPage);
 }
 
 //////////////////////
@@ -778,7 +822,6 @@ function loadDisplay(ticketId) {
 			function(json) {
 				//get back json
 				var dispObj = eval(json);
-				//var c4 = cerb4;
 				
 				//show the display tabs
 				$("#top_nav .top_tabs_home").hide();
@@ -786,7 +829,6 @@ function loadDisplay(ticketId) {
 
 				$("#tb_workspaces").hide();
 				$("#tb_display").show();
-				
 				
 				//set ticket properties box
 				var ticket = dispObj.ticket;
@@ -798,13 +840,9 @@ function loadDisplay(ticketId) {
 
 				//add conversation
 				renderConversation(ticket);
-				$('#conversation').find("ul.message_buttons li button").click(function(event) { replyButton(event)});
 
-				
 				//init reply pane
 				//$("#reply_pane[name=ticket_id]").val(ticketId);
-				
-				initPropertiesTabForTicket();
 				
 				window.scrollTo(0, 1);
 				
@@ -815,11 +853,30 @@ function loadDisplay(ticketId) {
 	);		
 }
 
+function initReplyPane() {
+	var replyPane = $('#reply_pane');
+	replyPane.find('button[name=me_button]').click(function(event) { replyMePressed(event);});
+	replyPane.find('button[name=anybody_button]').click(function(event) { replyAnyPressed(event);});
+	replyPane.find('input[name=status]').change(function(event) { propertiesToggleResumeDiv('reply')});
 
+	var workerSelect = replyPane.find('select[name=next_worker]');
+	createWorkerOptions(workerSelect);
+	workerSelect.change(propertiesNextWorkerChanged('reply'));
+
+	replyPane.find('#send_button').click(function(event) { sendReply(); });
+	$('#reply_pane #discard_reply').click(function(event) { replyPane.find("input[name=message_id]").val("");tabChangeSubscreen('Conv', 'convo_tab', true); });
+
+	propertiesToggleResumeDiv('reply');
+}
+
+/*
+ * Add event handlers and initialize aspects that don't depent on a specific ticket
+ * This is called only once when the app first loads (as opposed to when a ticket is clicked)
+ */
 function initPropertiesTab() {
 	var propContainer = $('#properties_container');
-	propContainer.find('#properties_me_button').click(function(event) {propertiesMePressed('properties')});
-	propContainer.find('#properties_anybody_button').click(function(event) { propertiesAnyPressed('properties');});
+	propContainer.find('button[name=me_button]').click(function(event) {propertiesMePressed('properties')});
+	propContainer.find('button[name=anybody_button]').click(function(event) { propertiesAnyPressed('properties');});
 	propContainer.find('input[name=status]').change(function(event) { propertiesToggleResumeDiv('properties')});
 
 	var workerSelect = propContainer.find('select[name=next_worker]');
@@ -830,11 +887,13 @@ function initPropertiesTab() {
 
 	propContainer.find('#save_properties_button').click(function(event) { propertiesSave();});	
 
-
-	propertiesToggleResumeDiv();
-	
+	propertiesToggleResumeDiv('properties');
 }
 
+/*
+ * Initializes the properties tab fields to values that apply to the current ticket
+ * called whenever the properties tab is clicked
+ */
 function initPropertiesTabForTicket() {
 	var propContainer = $('#properties_container');
 	var c4 = cerb4;
@@ -846,13 +905,12 @@ function initPropertiesTabForTicket() {
 	//set status
 	var statusInput = propContainer.find("input[name=status]");
 	var statusVal = getTicketStatusValue();
+
 	statusInput.filter('[value='+statusVal+']').attr('checked','checked');
 	
 	//set and show/hide 'resume' div based on status
 	if (ticket.due_date > 0) {
-		var date = new Date();
-		date.setTime(ticket.due_date*1000);
-		propContainer.find("input[name=ticket_reopen]").val(date.toDateString() + ' ' + date.toLocaleTimeString());
+		propContainer.find("input[name=ticket_reopen]").val(c4Date(ticket.due_date));
 	}
 	propertiesToggleResumeDiv('properties');
 	
@@ -861,11 +919,9 @@ function initPropertiesTabForTicket() {
 	var workerSelect = propContainer.find('select[name=next_worker]');
 	workerSelect.val(ticket.next_worker_id);
 	
-	//set and show/hide 'reply after x' div based on next worker
+	//set and show/hide 'release after x' div based on next worker
 	if (ticket.unlock_date != 0) {
-		var date = new Date();
-		date.setTime(ticket.unlock_date*1000);		
-		propContainer.find('input[name=unlock_date]').val(date.toDateString() + ' ' + date.toLocaleTimeString());
+		propContainer.find('input[name=unlock_date]').val(c4Date(ticket.unlock_date));
 	}
 	propertiesNextWorkerChanged('properties');
 	
@@ -887,10 +943,13 @@ function initPropertiesTabForTicket() {
 }
 
 function showHome() {
+	$("#reply_pane input[name=message_id]").val("");
+
 	$("#top_nav .top_tabs_display").hide();
 	$("#top_nav .top_tabs_home").show();
 	
 	$("#tb_display").hide();
+	$("#tb_display_right").hide();
 	$("#tb_workspaces").show();
 	
 	var worklists = $("#worklists");
@@ -914,10 +973,6 @@ function setTicketPropertiesBox() {
 	
 	var groupName = c4.groups[ticket.team_id].name;
 	$("#dispropGroup").text(groupName);
-	
-//	console.log("tm:"+ticket.team_id);
-//	console.log("ca:"+ticket.category_id);
-//	console.log(c4.categories);
 	
 	var bucket;
 	if(ticket.category_id == 0) {
@@ -963,16 +1018,18 @@ function getTicketStatus(ticket) {
 function getTicketStatusValue() {
 	var ticket = cerb4.ticket;
 	var status;
-	if(ticket.is_closed) {
+	if(ticket.is_deleted) {
+		status = 3;
+	}
+	else if(ticket.is_closed) {
 		status = 1;
 	}
 	else if(ticket.is_waiting) {
-		status = "2";
+		status = 2;
 	}
 	else {
 		status = 0;
 	}
-	console.log(status);
 	return status;
 	
 }
@@ -1006,9 +1063,8 @@ function renderConversation(ticket) {
 		doConvoBlockToggle($(this));
 	});
 
+	//add reply button handler
 	$('#conversation').find("ul.message_buttons li button").click(function(event) { replyButton(event)});
-		
-	
 	
 }
 
@@ -1029,10 +1085,8 @@ function getLastConvoBlock(convo) {
 function renderMessage(message, expanded) {
 //	var expanded = message.isLatestMessage;
 	var imagePath = DevblocksAppPath + "resource/cerberusweb.iphone/images/";
-	
 	var expandedClass = (message.worker_id > 0) ? "from_outgoing" : "from_incoming";
 		
-	
 	var html = [];
 	html[html.length] = "<div class=\"convo_block_container message_container\"";
 	if(expanded) {
@@ -1041,7 +1095,6 @@ function renderMessage(message, expanded) {
 	html[html.length] = "\"><ul class=\"convo_block_headers\">";
 	
 	var headers = message.headers;
-//	console.log(headers);
 	if(headers.from != null) html[html.length] = getConvoBlockHeaderHtml(expandedClass, "From", headers.from);
 	if(headers.to != null) html[html.length] = getConvoBlockHeaderHtml("extra_header", "To", headers.to);
 	if(headers.cc != null) html[html.length] = getConvoBlockHeaderHtml("extra_header", "Cc", headers.cc);
@@ -1070,13 +1123,33 @@ function renderMessage(message, expanded) {
 	
 	//html[html.length] = imagePath + "24x24/export2.png";
 	
-	
 	return html.join("");
 	
 }
 
-function renderComment() {
-	return "";
+function renderComment(comment, expanded) {
+	var html = [];
+	html[html.length] = '<div class="convo_block_container"><ul class="convo_block_headers"><li class="from_comment"><span>[comment] ';
+	
+	if (comment.address.first_name == '' && comment.address.last_name == '') {
+		html[html.length] = comment.address.email;
+	}
+	else {
+		html[html.length] = comment.address.first_name + ' ' + comment.address.last_name;
+	}
+	html[html.length] = '</span></li>';
+	if (comment.created > 0) {
+		html[html.length] = '<li><span>Date:</span> ';
+		html[html.length] = c4Date(comment.created);
+		html[html.length] = '</li>';
+	}
+	html[html.length] = '</ul><div class="convo_block_pane"><div class="convo_block_content">';
+	html[html.length] = escape_entities(comment.comment);
+	html[html.length] = '</div></div><div class="block_info"><span class="propId prop">';
+	html[html.length] = comment.id;
+	html[html.length] = '</span></div></div>';
+	
+	return html.join("");
 }
 
 function getConvoBlockHeaderHtml(liClass, headerName, headerVal) {
@@ -1094,5 +1167,14 @@ function escape_entities(html) {
     replace(/"/gmi, '&quot;').
     replace(/>/gmi, '&gt;').
     replace(/</gmi, '&lt;')
+}
+
+function c4Date(time) {
+	if (time > 0) {
+		var date = new Date();
+		date.setTime(time*1000);
+		return date.toDateString() + ' ' + date.toLocaleTimeString();
+	}
+	else return '';
 }
 
