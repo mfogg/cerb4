@@ -8,8 +8,10 @@ $(document).ready(function(){
 	var workspaceName = $('#tb_workspaces select').val();
 	workspaceChanged(workspaceName);
 	
-	console.log($('#top_nav .top_tabs_display li a'));
+	//console.log($('#top_nav .top_tabs_display li a'));
 	$('#top_nav .top_tabs_display li a').click(function(event) {tabClick(event.target)});
+	$('#top_nav >  img').click(function(event) {showHome(event);});
+//	$('#top_nav').click(function(event) {console.log(event.target);});
 	
 	$('#toolbar #tb_reply #tb_btn_back_display').click(function(event) { 	tabChangeSubscreen('Conv', 'convo_tab', true); });
 	$('#toolbar #tb_display #tb_btn_back_display2').click(function(event) {	showHome(event); });	
@@ -17,7 +19,7 @@ $(document).ready(function(){
 
 	initTabState();
 	initPropertiesTab();
-	initReplyPane();
+	initReplyPane()
 });
 
 
@@ -178,12 +180,21 @@ function replyButton(event) {
 	var isForward = button.is(".btnForward");
 	var heading="";
 	var subjectPrefix = "";
+	var banner = "";
 	if(isForward) {
 		heading="Forward";
 		subjectPrefix = "Fwd: ";
 
 		replyPane.find("table.forward_only").show();
-		replyPane.find("table.reply_only").hide();		
+		replyPane.find("table.reply_only").hide();
+
+		banner = "---- Forwarded message ----\n";
+		var headers = ticket.headers[messageId];
+		if(headers.subject != null) banner += "Subject: "+ headers.subject + "\n";
+		if(headers.from != null) banner += "From: "+ headers.from + "\n";
+		if(headers.date != null) banner += "Date: "+ headers.date + "\n";
+		if(headers.to != null) banner += "To: "+ headers.to + "\n\n";
+		
 	}
 	else {
 		heading="Reply";
@@ -204,9 +215,11 @@ function replyButton(event) {
 		}
 		replyPane.find('#requesters').text(requesterStr);
 		
-		//TODO put the 'ON <date>,<email> wrote:' here
-		content = "> " + content.replace(/[\n]/gi, "\n> ") + "\n\n";
+		var message = ticket.messages[messageId];
+		banner = "On " + c4Date(message.created_date) + ", " + ticket.headers[messageId].from + " wrote:\n";
+		content = "> " + content.replace(/[\n]/gi, "\n> ");
 	}
+	content = banner+content+"\n\n";
 	
 	//set subject
 	subject = subjectPrefix + ticket.subject;
