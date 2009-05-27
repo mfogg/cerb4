@@ -1093,7 +1093,6 @@ class ChDisplayPage extends CerberusPageExtension {
 			$view->params = array(
 			);
 			$view->renderLimit = 10;
-			$view->renderPage = 0;
 			$view->renderSortBy = SearchFields_Ticket::TICKET_CREATED_DATE;
 			$view->renderSortAsc = false;
 		}
@@ -1103,6 +1102,7 @@ class ChDisplayPage extends CerberusPageExtension {
 			SearchFields_Ticket::REQUESTER_ID => new DevblocksSearchCriteria(SearchFields_Ticket::REQUESTER_ID,'in',array_keys($requesters)),
 			SearchFields_Ticket::TICKET_DELETED => new DevblocksSearchCriteria(SearchFields_Ticket::TICKET_DELETED,DevblocksSearchCriteria::OPER_EQ,0)
 		);
+		$view->renderPage = 0;
 		$tpl->assign('view', $view);
 		
 		C4_AbstractViewLoader::setView($view->id,$view);
@@ -1140,12 +1140,10 @@ class ChDisplayPage extends CerberusPageExtension {
 			SearchFields_Task::SOURCE_EXTENSION,
 			SearchFields_Task::DUE_DATE,
 			SearchFields_Task::WORKER_ID,
-			SearchFields_Task::COMPLETED_DATE,
 		);
 		$view->params = array(
 			SearchFields_Task::SOURCE_EXTENSION => new DevblocksSearchCriteria(SearchFields_Task::SOURCE_EXTENSION,'=','cerberusweb.tasks.ticket'),
 			SearchFields_Task::SOURCE_ID => new DevblocksSearchCriteria(SearchFields_Task::SOURCE_ID,'=',$ticket_id),
-			SearchFields_Task::IS_COMPLETED => new DevblocksSearchCriteria(SearchFields_Task::IS_COMPLETED,'=',0),
 		);
 		$tpl->assign('view', $view);
 		
