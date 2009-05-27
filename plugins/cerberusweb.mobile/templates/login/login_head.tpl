@@ -1,0 +1,2 @@
+<style type="text/css" media="screen">@import "{devblocks_url}c=resource&p=cerberusweb.mobile&f=styles/cerberus/c4_mobile_login.css{/devblocks_url}";</style>
+<script>var DevblocksAppPath = '{$smarty.const.DEVBLOCKS_WEBPATH}';</script>
