@@ -2,10 +2,10 @@
 <plugin>
 	<id>cerberusweb.mobile</id>
 	<name>Cerberus Helpdesk: Mobile UI (Experimental)</name>
-	<description>Minimalistic interface for mobile devices.  This is accessed by appending /mobile to your helpdesk URL.</description>
+	<description>Mobile interface.  This is accessed by appending /mobile to your helpdesk URL.</description>
 	<author>WebGroup Media, LLC.</author>
 	<revision>0</revision>
-	<link>http://wiki.cerb4.com/wiki/New_Changes#Mobile_Interface</link>
+	<link></link>
 	<class>
 		<file>classes.php</file>
 		<name>ChMobilePlugin</name>
@@ -18,7 +18,7 @@
 			<name>Mobile Controller</name>
 			<class>
 				<file>classes.php</file>
-				<name>MobileController</name>
+				<name>ChMobileController</name>
 			</class>
 			<params>
 				<param key="uri" value="mobile" />
@@ -39,19 +39,6 @@
 		</extension>
 		
 		<extension point="cerberusweb.mobile.page">
-			<id>mobile.tickets</id>
-			<name>Tickets</name>
-			<class>
-				<file>classes.php</file>
-				<name>ChMobileTicketsPage</name>
-			</class>
-			<params>
-				<param key="uri" value="tickets" />
-				<param key="menutitle" value="Tickets" />
-			</params>
-		</extension>
-		
-		<extension point="cerberusweb.mobile.page">
 			<id>mobile.display</id>
 			<name>Display Ticket</name>
 			<class>
@@ -63,6 +50,7 @@
 				<param key="menutitle" value="Display" />
 			</params>
 		</extension>		
+
 		
 	</extensions>
 </plugin>

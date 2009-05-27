@@ -1,9 +1,30 @@
-<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head><title>Cerberus Helpdesk</title></head>
-<body style="font-size:small;font-weight:normal;">
+<head>
+<title>Cerberus Helpdesk</title>
 
-<img alt="powered by cerberus helpdesk" src="{devblocks_url}c=resource&p=cerberusweb.core&f=images/wgm/logo_small.gif{/devblocks_url}" border="0">
+<meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js" type="text/javascript"></script>
+
+{if !empty($page) && $page->isVisible()}
+	{$page->drawResourceTags()}
+{/if}
+
+<script>{literal}
+var DevblocksAppPath = '{/literal}{$smarty.const.DEVBLOCKS_WEBPATH}{literal}';
+var activeWorkerId = {/literal}{$active_worker->id}{literal};
+String.prototype.trim = function() {
+	return this.replace(/^\s+|\s+$/g,"");
+}
+
+addEventListener('load', function() { setTimeout(hideAddressBar, 0); }, false);
+function hideAddressBar() { window.scrollTo(0, 1); }
+
+
+{/literal}
+</script>
+
+</head>
+<body>
 
 {if !empty($page) && $page->isVisible()}
 	{$page->render()}
@@ -11,35 +32,7 @@
 	{$translate->_('header.no_page')}
 {/if}
 
-<br>
-<br>
-
-<div>
-[ <a href="{devblocks_url}c=mobile&a=tickets&a2=overview{/devblocks_url}">Mail</a> ]
-[ <a href="{devblocks_url}c=mobile&a=tickets&a2=search{/devblocks_url}">Search</a> ]
-
-</div>
-<br>
-<table cellspacing="0" cellpadding="2" border="0" width="100%">
-	<tr>
-		<td align="right" valign="bottom" style="line-height:150%;">
-		{if empty($visit)}
-			{$translate->_('header.not_signed_in')} [<a href="{devblocks_url}c=login{/devblocks_url}">{$translate->_('header.signon')|lower}</a>]
-		{else}
-			{$common_translated.header_signed_in}
-			[ <a href="{devblocks_url}c=login&a=signout{/devblocks_url}">{$translate->_('header.signoff')|lower}</a> ]
-			<br> 
-			<!-- 
-			[ <a href="javascript:;" onclick="genericAjaxPanel('c=display&a=showFnrPanel',this,false,'550px');">{$translate->_('header.fnr')|lower|escape}</a> ] 
-			[ <a href="{devblocks_url}c=preferences{/devblocks_url}">{$translate->_('header.preferences')|lower}</a> ]
-			{if !empty($active_worker_memberships)}[ <a href="{devblocks_url}c=groups{/devblocks_url}">{$translate->_('my groups')|lower}</a> ]{/if} 
-			{if $active_worker->is_superuser}[ <a href="{devblocks_url}c=config{/devblocks_url}">{$translate->_('header.config')|lower}</a> ]{/if} 
-			<br> 
-			-->
-		{/if}
-		</td>
-	</tr>
-</table>
+<div style="visibility: hidden; height: 325px;"></div>
 
 </body>
 </html>

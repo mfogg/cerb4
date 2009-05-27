@@ -1,8 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head><title>Cerberus Helpdesk</title></head>
-<body style="font-size:small;font-weight:normal;">
+<div>
+{assign var=logo_url value=$settings->get('helpdesk_logo_url','')}
+{if empty($logo_url)}
+<img src="{devblocks_url}c=resource&p=cerberusweb.core&f=images/wgm/logo.gif{/devblocks_url}?v={$smarty.const.APP_BUILD}">
+{else}
+<img src="{$logo_url}">
+{/if}
+</div>
 
 <div class="block">
 <form action="{devblocks_url}{/devblocks_url}" method="post" id="loginForm">
@@ -13,21 +16,28 @@
 <input type="hidden" name="original_path" value="{$original_path}">
 <input type="hidden" name="original_query" value="{$original_query}">
 <table cellpadding="0" cellspacing="2">
+{if isset($login_failed)}
+<tr>
+	<td></td>
+	<td valign="middle" style="color:red;">Invalid Login</td>
+</tr>
+{/if}
 <tr>
 	<td align="right" valign="middle">E-mail:</td>
-	<td><input type="text" name="email" id="loginForm_email"></td>
+	<td><input type="text" name="email" size="20" id="loginForm_email" autocorrect="off" autocapitalize="off"></td>
 </tr>
 <tr>
 	<td align="right" valign="middle">Password:</td>
-	<td>
-		<input type="password" name="password" id="loginForm_password"> 
-		<br/>[ <a href="{devblocks_url}c=login&a=forgot{/devblocks_url}">recover password</a> ]
+	<td nowrap="nowrap">
+		<input type="password" name="password" size="20" id="loginForm_password"/>
 	</td>
+</tr>
+<tr>
+	<td></td>
+	<td><a href="{devblocks_url}c=login&a=forgot{/devblocks_url}">forgot your password?</a></td>
 </tr>
 </table>
 <button type="submit">{$translate->_('header.signon')|capitalize}</button>
 </form>
 </div>
 
-</body>
-</html>
